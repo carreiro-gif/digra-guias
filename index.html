@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DIGRA - Guia de Remessa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f1f5f9;
+      }
+
+      /* Screen Preview Styles for Pages */
+      .print-page {
+        width: 148mm;
+        min-height: 209mm; /* A5 Height */
+        margin: 0 auto;
+        padding: 10mm; /* Match print margin */
+        background-color: white;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        color: black;
+      }
+
+      @media print {
+        @page {
+          size: A5 portrait;
+          margin: 10mm;
+        }
+        
+        body {
+          background-color: white;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          color: #000 !important;
+        }
+
+        .no-print {
+          display: none !important;
+        }
+        
+        /* Print Reset */
+        .print-root {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+        }
+
+        .print-page {
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+          break-after: page;
+          /* Ensure strict A5 sizing during print */
+          width: 148mm;
+          height: 209mm; /* A5 Height - margins handled by @page mostly, but explicit height helps container */
+          overflow: hidden;
+          padding: 0; /* Let @page handle margins or keep internal padding if @page is 0 */
+          border: none;
+        }
+
+        .print-page:last-child {
+          page-break-after: auto;
+          break-after: auto;
+        }
+
+        /* Force Black and White Elements */
+        * {
+          border-color: #000 !important;
+          color: #000 !important;
+        }
+        
+        img {
+          filter: grayscale(100%) contrast(120%);
+        }
+      }
+      
+      /* Utilities for the specific layout */
+      .print-border-bottom {
+        border-bottom: 1px solid #000;
+      }
+      .print-border-top {
+        border-top: 1px solid #000;
+      }
+      .print-border {
+        border: 1px solid #000;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

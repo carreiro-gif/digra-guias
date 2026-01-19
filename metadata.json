@@ -1,0 +1,7 @@
+{
+  "name": "DIGRA - Sistema de Guias de Remessa",
+  "description": "Sistema de gestão, emissão e impressão de guias de remessa de materiais gráficos para o PJERJ.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
