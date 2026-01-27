@@ -123,61 +123,48 @@ function App() {
         </div>
 
         <nav
-  style={{
-    padding: "16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  }}
->
-  <button
-    onClick={() => setActiveTab("form")}
-    style={{
-      width: "100%",
-      padding: "8px",
-      backgroundColor: "#2563eb",
-      color: "#fff",
-      borderRadius: "6px",
-    }}
-  >
-    Nova Guia
-  </button>
+          style={{
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+          }}
+        >
+          <button
+            onClick={() => setActiveTab("form")}
+            style={{
+              width: "100%",
+              padding: "8px",
+              backgroundColor: "#2563eb",
+              color: "#fff",
+              borderRadius: "6px",
+            }}
+          >
+            Nova Guia
+          </button>
 
-  <button
-    onClick={() => setActiveTab("list")}
-    style={{
-      width: "100%",
-      padding: "8px",
-      backgroundColor: "#334155",
-      color: "#fff",
-      borderRadius: "6px",
-    }}
-  >
-    Histórico
-  </button>
+          <button
+            onClick={() => setActiveTab("list")}
+            style={{
+              width: "100%",
+              padding: "8px",
+              backgroundColor: "#334155",
+              color: "#fff",
+              borderRadius: "6px",
+            }}
+          >
+            Histórico
+          </button>
 
-  <hr style={{ margin: "12px 0", borderColor: "#334155" }} />
+          <hr style={{ margin: "12px 0", borderColor: "#334155" }} />
 
-  <button style={{ width: "100%" }} onClick={() => setActiveTab("orgaos")}>
-    Órgãos
-  </button>
-
-  <button style={{ width: "100%" }} onClick={() => setActiveTab("servicos")}>
-    Serviços
-  </button>
-
-  <button style={{ width: "100%" }} onClick={() => setActiveTab("operadores")}>
-    Operadores
-  </button>
-
-  <button style={{ width: "100%" }} onClick={() => setActiveTab("externos")}>
-    Externos
-  </button>
-
-  <button style={{ width: "100%" }} onClick={() => setActiveTab("config")}>
-    Numeração
-  </button>
-</nav>
+          <button style={{ width: "100%" }} onClick={() => setActiveTab("orgaos")}>Órgãos</button>
+          <button style={{ width: "100%" }} onClick={() => setActiveTab("servicos")}>Serviços</button>
+          <button style={{ width: "100%" }} onClick={() => setActiveTab("operadores")}>Operadores</button>
+          <button style={{ width: "100%" }} onClick={() => setActiveTab("externos")}>Externos</button>
+          <button style={{ width: "100%" }} onClick={() => setActiveTab("config")}>Numeração</button>
+        </nav>
+      </aside>
 
       {/* MAIN */}
       <main className="flex-1 p-6 overflow-auto">
