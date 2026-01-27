@@ -9,10 +9,6 @@ import { ServicoManager } from './components/ServicoManager';
 import { ConfigManager } from './components/ConfigManager';
 import { ORGAOS as INITIAL_ORGAOS, INITIAL_OPERADORES, INITIAL_RESPONSAVEIS, INITIAL_SERVICOS } from './data/mockData';
 
-// 🔥 FIREBASE
-import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db } from "./services/firebase";
-
 // Icons
 const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>;
 const IconList = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>;
