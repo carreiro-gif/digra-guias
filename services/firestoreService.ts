@@ -30,6 +30,9 @@ export const subscribeGuias = (callback: (dados: any[]) => void) => {
   });
 };
 
+// 🔹 Alias para manter compatibilidade com o App.tsx
+export const ouvirGuias = subscribeGuias;
+
 export const deleteGuiaFS = async (id: string) => {
   await deleteDoc(doc(db, "guias", id));
 };
