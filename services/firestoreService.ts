@@ -1,9 +1,7 @@
 import {
   collection,
-  addDoc,
   setDoc,
   doc,
-  getDocs,
   deleteDoc,
   onSnapshot,
   Timestamp,
@@ -15,21 +13,24 @@ import { db } from "./firebase";
    GUIAS
 ========================= */
 
-export const salvarGuia = async (guia: any) => {
+export const saveGuiaFS = async (guia: any) => {
   await setDoc(doc(db, "guias", guia.id), {
     ...guia,
     criadoEm: Timestamp.now(),
   });
 };
 
-export const ouvirGuias = (callback: (dados: any[]) => void) => {
+export const subscribeGuias = (callback: (dados: any[]) => void) => {
   return onSnapshot(collection(db, "guias"), (snapshot) => {
-    const lista = snapshot.docs.map((doc) => doc.data());
+    const lista = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     callback(lista);
   });
 };
 
-export const excluirGuia = async (id: string) => {
+export const deleteGuiaFS = async (id: string) => {
   await deleteDoc(doc(db, "guias", id));
 };
 
@@ -43,7 +44,10 @@ export const salvarOrgao = async (orgao: any) => {
 
 export const ouvirOrgaos = (callback: (dados: any[]) => void) => {
   return onSnapshot(collection(db, "orgaos"), (snapshot) => {
-    const lista = snapshot.docs.map((doc) => doc.data());
+    const lista = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     callback(lista);
   });
 };
@@ -58,7 +62,10 @@ export const salvarOperador = async (operador: any) => {
 
 export const ouvirOperadores = (callback: (dados: any[]) => void) => {
   return onSnapshot(collection(db, "operadores"), (snapshot) => {
-    const lista = snapshot.docs.map((doc) => doc.data());
+    const lista = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     callback(lista);
   });
 };
@@ -73,7 +80,10 @@ export const salvarResponsavel = async (resp: any) => {
 
 export const ouvirResponsaveis = (callback: (dados: any[]) => void) => {
   return onSnapshot(collection(db, "externos"), (snapshot) => {
-    const lista = snapshot.docs.map((doc) => doc.data());
+    const lista = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     callback(lista);
   });
 };
@@ -88,7 +98,10 @@ export const salvarServico = async (servico: any) => {
 
 export const ouvirServicos = (callback: (dados: any[]) => void) => {
   return onSnapshot(collection(db, "servicos"), (snapshot) => {
-    const lista = snapshot.docs.map((doc) => doc.data());
+    const lista = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     callback(lista);
   });
 };
