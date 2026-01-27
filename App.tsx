@@ -122,17 +122,62 @@ function App() {
           <h1 className="text-xs mt-3 tracking-widest">GUIAS DE REMESSA</h1>
         </div>
 
-        <nav className="p-4 space-y-2">
-          <button onClick={() => setActiveTab('form')} className="w-full px-4 py-2 bg-blue-600 rounded">Nova Guia</button>
-          <button onClick={() => setActiveTab('list')} className="w-full px-4 py-2 bg-slate-700 rounded">Histórico</button>
-          <hr className="border-slate-700 my-3" />
-          <button onClick={() => setActiveTab('orgaos')}>Órgãos</button>
-          <button onClick={() => setActiveTab('servicos')}>Serviços</button>
-          <button onClick={() => setActiveTab('operadores')}>Operadores</button>
-          <button onClick={() => setActiveTab('externos')}>Externos</button>
-          <button onClick={() => setActiveTab('config')}>Numeração</button>
-        </nav>
-      </aside>
+        <nav
+  style={{
+    padding: "16px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  }}
+>
+  <button
+    onClick={() => setActiveTab("form")}
+    style={{
+      width: "100%",
+      padding: "8px",
+      backgroundColor: "#2563eb",
+      color: "#fff",
+      borderRadius: "6px",
+    }}
+  >
+    Nova Guia
+  </button>
+
+  <button
+    onClick={() => setActiveTab("list")}
+    style={{
+      width: "100%",
+      padding: "8px",
+      backgroundColor: "#334155",
+      color: "#fff",
+      borderRadius: "6px",
+    }}
+  >
+    Histórico
+  </button>
+
+  <hr style={{ margin: "12px 0", borderColor: "#334155" }} />
+
+  <button style={{ width: "100%" }} onClick={() => setActiveTab("orgaos")}>
+    Órgãos
+  </button>
+
+  <button style={{ width: "100%" }} onClick={() => setActiveTab("servicos")}>
+    Serviços
+  </button>
+
+  <button style={{ width: "100%" }} onClick={() => setActiveTab("operadores")}>
+    Operadores
+  </button>
+
+  <button style={{ width: "100%" }} onClick={() => setActiveTab("externos")}>
+    Externos
+  </button>
+
+  <button style={{ width: "100%" }} onClick={() => setActiveTab("config")}>
+    Numeração
+  </button>
+</nav>
 
       {/* MAIN */}
       <main className="flex-1 p-6 overflow-auto">
