@@ -39,7 +39,6 @@ export const deleteGuiaFS = async (id: string) => {
 export const salvarGuia = saveGuiaFS;
 export const ouvirGuias = subscribeGuias;
 export const excluirGuia = deleteGuiaFS;
-};
 
 /* =========================
    ÓRGÃOS
