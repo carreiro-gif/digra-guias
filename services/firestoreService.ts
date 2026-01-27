@@ -13,6 +13,7 @@ import { db } from "./firebase";
    GUIAS
 ========================= */
 
+// nomes internos (corretos)
 export const saveGuiaFS = async (guia: any) => {
   await setDoc(doc(db, "guias", guia.id), {
     ...guia,
@@ -30,11 +31,14 @@ export const subscribeGuias = (callback: (dados: any[]) => void) => {
   });
 };
 
-// 🔹 Alias para manter compatibilidade com o App.tsx
-export const ouvirGuias = subscribeGuias;
-
 export const deleteGuiaFS = async (id: string) => {
   await deleteDoc(doc(db, "guias", id));
+};
+
+// 🔹 ALIASES para compatibilidade com App.tsx
+export const salvarGuia = saveGuiaFS;
+export const ouvirGuias = subscribeGuias;
+export const excluirGuia = deleteGuiaFS;
 };
 
 /* =========================
