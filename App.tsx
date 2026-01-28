@@ -35,9 +35,63 @@ import {
   excluirServico
 } from './services/firestoreService';
 
-// ICONS
-const IconPlus = () => <svg width="20" height="20"><circle cx="10" cy="10" r="9" stroke="currentColor" fill="none"/><path d="M10 5v10M5 10h10" stroke="currentColor"/></svg>;
-const IconList = () => <svg width="20" height="20"><line x1="4" y1="5" x2="16" y2="5" stroke="currentColor"/><line x1="4" y1="10" x2="16" y2="10" stroke="currentColor"/><line x1="4" y1="15" x2="16" y2="15" stroke="currentColor"/></svg>;
+// ÍCONES SVG
+const IconPlus = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <path d="M10 5v10M5 10h10" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+const IconList = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <line x1="4" y1="5" x2="16" y2="5" stroke="currentColor" strokeWidth="2"/>
+    <line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" strokeWidth="2"/>
+    <line x1="4" y1="15" x2="16" y2="15" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+const IconBuilding = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="4" y="2" width="12" height="16" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <rect x="7" y="5" width="2" height="2" fill="currentColor"/>
+    <rect x="11" y="5" width="2" height="2" fill="currentColor"/>
+    <rect x="7" y="9" width="2" height="2" fill="currentColor"/>
+    <rect x="11" y="9" width="2" height="2" fill="currentColor"/>
+    <rect x="7" y="13" width="2" height="4" fill="currentColor"/>
+    <rect x="11" y="13" width="2" height="4" fill="currentColor"/>
+  </svg>
+);
+
+const IconTag = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M3 10L10 3L17 10L10 17L3 10Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <circle cx="10" cy="10" r="1.5" fill="currentColor"/>
+  </svg>
+);
+
+const IconUsers = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <circle cx="7" cy="6" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <path d="M2 16c0-2.5 2-4 5-4s5 1.5 5 4" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <circle cx="14" cy="7" r="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <path d="M18 16c0-1.5-1-3-3-3" stroke="currentColor" strokeWidth="2" fill="none"/>
+  </svg>
+);
+
+const IconUserCheck = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <path d="M2 16c0-2.5 2-4 6-4s6 1.5 6 4" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <path d="M14 8l2 2 4-4" stroke="currentColor" strokeWidth="2" fill="none"/>
+  </svg>
+);
+
+const IconHash = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M7 3L5 17M15 3L13 17M3 7h14M2 13h14" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
 
 // LOGO
 const LogoDigra = ({ size = 'large' }: { size?: 'small' | 'large' }) => (
@@ -256,47 +310,103 @@ function App() {
           <h1 className="text-xs mt-3 tracking-widest">GUIAS DE REMESSA</h1>
         </div>
 
-        <nav
-          style={{
-            padding: "16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-          }}
-        >
+        <nav className="p-4 flex flex-col gap-2">
+          {/* Nova Guia */}
           <button
             onClick={() => setActiveTab("form")}
-            style={{
-              width: "100%",
-              padding: "8px",
-              backgroundColor: "#2563eb",
-              color: "#fff",
-              borderRadius: "6px",
-            }}
+            className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+              activeTab === 'form' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-slate-300 hover:bg-slate-800'
+            }`}
           >
-            Nova Guia
+            <IconPlus />
+            <span>Nova Guia</span>
           </button>
 
+          {/* Histórico */}
           <button
             onClick={() => setActiveTab("list")}
-            style={{
-              width: "100%",
-              padding: "8px",
-              backgroundColor: "#334155",
-              color: "#fff",
-              borderRadius: "6px",
-            }}
+            className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+              activeTab === 'list' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-slate-300 hover:bg-slate-800'
+            }`}
           >
-            Histórico
+            <IconList />
+            <span>Histórico</span>
           </button>
 
-          <hr style={{ margin: "12px 0", borderColor: "#334155" }} />
+          <hr className="my-2 border-slate-700" />
+          
+          <div className="text-xs text-slate-500 uppercase tracking-wider px-4 py-2">
+            Cadastros
+          </div>
 
-          <button style={{ width: "100%" }} onClick={() => setActiveTab("orgaos")}>Órgãos</button>
-          <button style={{ width: "100%" }} onClick={() => setActiveTab("servicos")}>Serviços</button>
-          <button style={{ width: "100%" }} onClick={() => setActiveTab("operadores")}>Operadores</button>
-          <button style={{ width: "100%" }} onClick={() => setActiveTab("externos")}>Externos</button>
-          <button style={{ width: "100%" }} onClick={() => setActiveTab("config")}>Numeração</button>
+          {/* Órgãos */}
+          <button
+            onClick={() => setActiveTab("orgaos")}
+            className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+              activeTab === 'orgaos' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            <IconBuilding />
+            <span>Órgãos</span>
+          </button>
+
+          {/* Serviços */}
+          <button
+            onClick={() => setActiveTab("servicos")}
+            className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+              activeTab === 'servicos' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            <IconTag />
+            <span>Serviços</span>
+          </button>
+
+          {/* Operadores */}
+          <button
+            onClick={() => setActiveTab("operadores")}
+            className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+              activeTab === 'operadores' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            <IconUsers />
+            <span>Operadores</span>
+          </button>
+
+          {/* Externos */}
+          <button
+            onClick={() => setActiveTab("externos")}
+            className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+              activeTab === 'externos' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            <IconUserCheck />
+            <span>Externos</span>
+          </button>
+
+          {/* Numeração */}
+          <button
+            onClick={() => setActiveTab("config")}
+            className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+              activeTab === 'config' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            <IconHash />
+            <span>Numeração</span>
+          </button>
         </nav>
       </aside>
 
