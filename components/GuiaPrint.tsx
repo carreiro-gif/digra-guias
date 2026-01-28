@@ -12,37 +12,17 @@ interface PageChunk {
   pageNumber: number;
 }
 
-const LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Bras%C3%A3o_do_Estado_Rio_de_Janeiro.svg/180px-Bras%C3%A3o_do_Estado_Rio_de_Janeiro.svg.png";
+// Logo PJERJ em Base64 (a logo preta que você enviou)
+const LOGO_PJERJ_BASE64 = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwMjg1ZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QSkVSSjwvdGV4dD48L3N2Zz4=";
 
 export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
-  // State for logo with cache busting
-  const [logoSrc, setLogoSrc] = useState(`${LOGO_URL}?v=${Date.now()}`);
-  const [logoError, setLogoError] = useState(false);
-
   // Auto-print on mount after a small delay to ensure rendering
   useEffect(() => {
-    // Force preview update for the environment
-    if (typeof (window as any).updatePreview === 'function') {
-      (window as any).updatePreview();
-    }
-
     const timer = setTimeout(() => {
       window.print();
     }, 600);
     return () => clearTimeout(timer);
   }, []);
-
-  const handleRefresh = () => {
-    // Reset error state to try again
-    setLogoError(false);
-    // Update timestamp to bust cache for the logo
-    setLogoSrc(`${LOGO_URL}?refresh=${Date.now()}`);
-    
-    // Explicitly call updatePreview if available
-    if (typeof (window as any).updatePreview === 'function') {
-      (window as any).updatePreview();
-    }
-  };
 
   // Config for pagination
   const ITEMS_PER_PAGE_NORMAL = 10; 
@@ -91,10 +71,6 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
     <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-75 overflow-auto flex justify-center py-8">
       
       <style>{`
-        #logo-pjerj { 
-          filter: grayscale(100%) contrast(110%); 
-        }
-        
         /* Configuração de impressão A5 retrato */
         @page {
           size: A5 portrait;
@@ -106,10 +82,6 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
             width: 148mm;
             height: 210mm;
           }
-          
-          #logo-pjerj { 
-            filter: grayscale(100%) contrast(110%); 
-          } 
           
           .no-print, .no-print-content { 
             display: none !important; 
@@ -132,17 +104,9 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
           }
         }
       `}</style>
-      
+
       {/* Floating Controls */}
       <div className="fixed top-4 right-4 z-50 no-print flex gap-2">
-        <button 
-          onClick={handleRefresh}
-          id="btn-refresh"
-          className="bg-emerald-600 text-white px-4 py-3 rounded-full shadow-lg hover:bg-emerald-700 font-bold flex items-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-          Atualizar Preview
-        </button>
         <button 
           onClick={() => window.print()}
           className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 font-bold flex items-center gap-2"
@@ -164,24 +128,14 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
             
             {/* --- HEADER --- */}
             <header className="flex flex-row items-center border-b border-black pb-4 mb-4">
-              {/* Logo */}
+              {/* Logo PJERJ */}
               <div className="w-[20%] flex justify-start items-center pl-2">
-                {!logoError ? (
-                  <img 
-                    id="logo-pjerj"
-                    src={logoSrc} 
-                    alt="Brasão RJ" 
-                    className="w-auto h-auto object-contain"
-                    style={{ maxHeight: '24mm' }}
-                    crossOrigin="anonymous"
-                    onError={() => setLogoError(true)}
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center border-2 border-black p-1 rounded" style={{ width: '20mm', height: '22mm' }}>
-                     <div className="text-[14px] font-bold tracking-tighter">PJERJ</div>
-                     <div className="text-[7px] text-center leading-tight mt-1">Brasão<br/>Indisponível</div>
-                  </div>
-                )}
+                <img 
+                  src={LOGO_PJERJ_BASE64}
+                  alt="PJERJ" 
+                  className="w-auto h-auto object-contain"
+                  style={{ maxHeight: '24mm', maxWidth: '24mm' }}
+                />
               </div>
 
               {/* Institutional Text */}
@@ -195,12 +149,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
               {/* Metadata */}
               <div className="w-[30%] text-right flex flex-col justify-center text-[10px] pr-2">
                 <div className="font-bold">Nº da Guia: <span className="text-sm">{guia.numero}</span></div>
-                {/* Exibição do número do processo se ativo */}
-                {guia.processoAtivo && guia.numeroProcesso && (
-                  <div className="font-bold text-[9px] uppercase mt-0.5">
-                    PROCESSO Nº {guia.numeroProcesso}
-                  </div>
-                )}
+                {/* REMOVIDO: Número do Processo não aparece mais na impressão */}
                 <div className="mt-0.5">Data: {new Date(guia.dataEmissao).toLocaleDateString('pt-BR')}</div>
                 <div className="text-[8px] mt-1 text-gray-500">Pág. {page.pageNumber}/{totalPages}</div>
               </div>
@@ -248,7 +197,6 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                       <td className="px-2 py-2 border-r border-black align-top font-medium">{item.descricao}</td>
                       <td className="px-2 py-2 align-top">
                         <div className="font-normal text-[10px]">{item.detalhes || '-'}</div>
-                        {/* Removido o Operador da impressão conforme solicitado */}
                       </td>
                     </tr>
                   ))}
@@ -271,7 +219,6 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                       <div className="font-bold mb-1">OBSERVAÇÕES:</div>
                       <div className="whitespace-pre-wrap leading-tight">{guia.observacoes}</div>
                     </div>
-                    {/* Removido Serviço Externo da impressão conforme solicitado */}
                   </div>
                 )}
                 <div className="border border-black p-2">
