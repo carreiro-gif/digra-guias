@@ -34,13 +34,13 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
     let pageCount = 1;
 
     if (remaining.length === 0) {
-      _pages.push({ items: [], isLast: true, pageNumber: 1 });
+      _pages.push({ items: [], isLast: true, : 1 });
       return _pages;
     }
 
     while (true) {
       if (remaining.length <= ITEMS_PER_PAGE_WITH_FOOTER) {
-        _pages.push({ items: remaining, isLast: true, pageNumber: pageCount });
+        _pages.push({ items: remaining, isLast: true, : pageCount });
         break;
       }
       
@@ -52,13 +52,13 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
       _pages.push({ 
         items: chunk, 
         isLast: isExhausted, 
-        pageNumber: pageCount 
+        : pageCount 
       });
       pageCount++;
 
       if (isExhausted) {
         _pages[_pages.length - 1].isLast = false; 
-        _pages.push({ items: [], isLast: true, pageNumber: pageCount });
+        _pages.push({ items: [], isLast: true, : pageCount });
         break;
       }
     }
@@ -151,7 +151,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                 <div className="font-bold">Nº da Guia: <span className="text-sm">{guia.numero}</span></div>
                 {/* REMOVIDO: Número do Processo não aparece mais na impressão */}
                 <div className="mt-0.5">Data: {new Date(guia.dataEmissao).toLocaleDateString('pt-BR')}</div>
-                <div className="text-[8px] mt-1 text-gray-500">Pág. {page.pageNumber}/{totalPages}</div>
+                
               </div>
             </header>
 
@@ -235,7 +235,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                     <div className="flex gap-4 items-end pt-2"><div className="w-16 font-bold shrink-0">Assinatura:</div><div className="flex-1 border-b border-black h-4"></div></div>
                   </div>
                 </div>
-                <div className="text-[8px] text-center mt-2 font-medium">DIGRA - Sistema de Gestão de Remessa</div>
+                
               </footer>
             )}
           </div>
