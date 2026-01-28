@@ -135,11 +135,12 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                 />
               </div>
 
-              {/* Texto institucional — centralizado, com respiro e primeira linha sem quebra */}
+              {/* Texto institucional — centralizado, com respiro; linhas sem quebra quando necessário */}
               <div className="w-[50%] text-[10px] font-bold leading-snug tracking-wide uppercase text-center flex flex-col justify-center pl-3">
                 <span className="whitespace-nowrap">Poder Judiciário do Estado do Rio de Janeiro</span>
                 <span>Diretoria Geral de Logística</span>
-                <span>Departamento de Patrimônio e Material</span>
+                {/* Esta linha fica 1 linha só, sem quebra e com micro redução */}
+                <span className="whitespace-nowrap tracking-normal text-[9.8px]">Departamento de Patrimônio e Material</span>
                 <span className="mt-0.5">Divisão de Produção Gráfica (DIGRA)</span>
               </div>
 
@@ -154,9 +155,9 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
             {/* Título */}
             <div className="text-center mb-4">
               <h1
-                className="text-[22px] font-bold uppercase border border-black inline-block tracking-wider"
-                // Redução de 4mm na largura total (2mm por lado), altura proporcional
-                style={{ padding: '0.4mm 6.5mm' }}
+                className="text-[20px] font-bold uppercase border border-black inline-block tracking-wider"
+                // Redução adicional: proporcional e mais elegante
+                style={{ padding: '0.3mm 5.5mm' }}
               >
                 GUIA
               </h1>
@@ -244,3 +245,4 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
     </div>
   );
 };
+``
