@@ -12,8 +12,8 @@ interface PageChunk {
   pageNumber: number;
 }
 
-// Logo PJERJ em Base64 (substituída pela URL da logo no GitHub)
-const LOGO_PJERJ_BASE64 = "https://raw.githubusercontent.com/carreiro-gif/digra-logo-TJ/main/logo.png";
+// Logo PJERJ (URL direta do arquivo via raw do GitHub)
+const LOGO_PJERJ_BASE64 = "https://github.com/carreiro-gif/digra-logo-TJ/raw/main/logo.png";
 
 export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
   useEffect(() => {
@@ -132,6 +132,10 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                   alt="PJERJ" 
                   className="w-auto h-auto object-contain"
                   style={{ maxHeight: '24mm', maxWidth: '24mm' }}
+                  onError={(e) => {
+                    // fallback automático caso o raw do GitHub não carregue
+                    (e.currentTarget as HTMLImageElement).src = "https://github.com/carreiro-gif/digra-logo-TJ/raw/main/logo.png?raw=1";
+                  }}
                 />
               </div>
 
@@ -153,7 +157,13 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
 
             {/* Title */}
             <div className="text-center mb-4">
-              <h1 className="text-xl font-bold uppercase border border-black inline-block px-8 py-1 tracking-wider">
+              <h1
+                className="text-xl font-bold uppercase border border-black inline-block tracking-wider"
+                // Redução de 4mm na largura total (2mm por lado), altura proporcional
+                // Conversão: o original (px-8 py-1) ≈ 8.5mm cada lado / 1.06mm vertical.
+                // Proporção mantida: novo padding ~ 6.5mm horizontal; ~0.4mm vertical.
+                style={{ padding: '0.4mm 6.5mm' }}
+              >
                 GUIA
               </h1>
             </div>
