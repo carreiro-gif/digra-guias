@@ -135,12 +135,12 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                 />
               </div>
 
-              {/* Institutional Text */}
-              <div className="w-[50%] text-[9px] font-bold leading-tight uppercase text-center flex flex-col justify-center">
+              {/* Institutional Text — Opção A (centralizado, maior sutilmente) */}
+              <div className="w-[50%] text-[10.5px] font-bold leading-snug tracking-wide uppercase text-center flex flex-col justify-center">
                 <span>Poder Judiciário do Estado do Rio de Janeiro</span>
                 <span>Diretoria Geral de Logística</span>
                 <span>Departamento de Patrimônio e Material</span>
-                <span className="mt-1">Divisão de Produção Gráfica (DIGRA)</span>
+                <span className="mt-0.5">Divisão de Produção Gráfica (DIGRA)</span>
               </div>
 
               {/* Metadata */}
@@ -154,7 +154,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
             {/* Title */}
             <div className="text-center mb-4">
               <h1
-                className="text-xl font-bold uppercase border border-black inline-block tracking-wider"
+                className="text-[22px] font-bold uppercase border border-black inline-block tracking-wider"
                 // Redução de 4mm na largura total (2mm por lado), altura proporcional
                 style={{ padding: '0.4mm 6.5mm' }}
               >
