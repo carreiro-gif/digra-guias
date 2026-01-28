@@ -12,11 +12,10 @@ interface PageChunk {
   pageNumber: number;
 }
 
-// Logo PJERJ em Base64 (a logo preta que você enviou)
-const LOGO_PJERJ_BASE64 = "data:image/png;base64,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
+// Logo PJERJ em Base64
+const LOGO_PJERJ_BASE64 = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwMjg1ZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QSkVSSjwvdGV4dD48L3N2Zz4=";
 
 export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
-  // Auto-print on mount after a small delay to ensure rendering
   useEffect(() => {
     const timer = setTimeout(() => {
       window.print();
@@ -24,7 +23,6 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Config for pagination
   const ITEMS_PER_PAGE_NORMAL = 10; 
   const ITEMS_PER_PAGE_WITH_FOOTER = 5;
 
@@ -34,13 +32,13 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
     let pageCount = 1;
 
     if (remaining.length === 0) {
-      _pages.push({ items: [], isLast: true, : 1 });
+      _pages.push({ items: [], isLast: true, pageNumber: 1 });
       return _pages;
     }
 
     while (true) {
       if (remaining.length <= ITEMS_PER_PAGE_WITH_FOOTER) {
-        _pages.push({ items: remaining, isLast: true, : pageCount });
+        _pages.push({ items: remaining, isLast: true, pageNumber: pageCount });
         break;
       }
       
@@ -52,13 +50,13 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
       _pages.push({ 
         items: chunk, 
         isLast: isExhausted, 
-        : pageCount 
+        pageNumber: pageCount 
       });
       pageCount++;
 
       if (isExhausted) {
         _pages[_pages.length - 1].isLast = false; 
-        _pages.push({ items: [], isLast: true, : pageCount });
+        _pages.push({ items: [], isLast: true, pageNumber: pageCount });
         break;
       }
     }
@@ -71,7 +69,6 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
     <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-75 overflow-auto flex justify-center py-8">
       
       <style>{`
-        /* Configuração de impressão A5 retrato */
         @page {
           size: A5 portrait;
           margin: 10mm;
@@ -149,9 +146,8 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
               {/* Metadata */}
               <div className="w-[30%] text-right flex flex-col justify-center text-[10px] pr-2">
                 <div className="font-bold">Nº da Guia: <span className="text-sm">{guia.numero}</span></div>
-                {/* REMOVIDO: Número do Processo não aparece mais na impressão */}
                 <div className="mt-0.5">Data: {new Date(guia.dataEmissao).toLocaleDateString('pt-BR')}</div>
-                
+                {/* REMOVIDO: Pág. X/Y */}
               </div>
             </header>
 
@@ -235,7 +231,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                     <div className="flex gap-4 items-end pt-2"><div className="w-16 font-bold shrink-0">Assinatura:</div><div className="flex-1 border-b border-black h-4"></div></div>
                   </div>
                 </div>
-                
+                {/* REMOVIDO: DIGRA - Sistema de Gestão de Remessa */}
               </footer>
             )}
           </div>
