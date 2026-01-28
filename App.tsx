@@ -16,14 +16,26 @@ import {
   INITIAL_SERVICOS
 } from './data/mockData';
 
-// 🔥 FIRESTORE (NOMES REAIS DO SEU SERVICE)
+// 🔥 FIRESTORE - Importando TODAS as funções
 import {
   salvarGuia,
   ouvirGuias,
-  excluirGuia
+  excluirGuia,
+  salvarOrgao,
+  ouvirOrgaos,
+  excluirOrgao,
+  salvarOperador,
+  ouvirOperadores,
+  excluirOperador,
+  salvarResponsavel,
+  ouvirResponsaveis,
+  excluirResponsavel,
+  salvarServico,
+  ouvirServicos,
+  excluirServico
 } from './services/firestoreService';
 
-// ICONS (mantidos)
+// ICONS
 const IconPlus = () => <svg width="20" height="20"><circle cx="10" cy="10" r="9" stroke="currentColor" fill="none"/><path d="M10 5v10M5 10h10" stroke="currentColor"/></svg>;
 const IconList = () => <svg width="20" height="20"><line x1="4" y1="5" x2="16" y2="5" stroke="currentColor"/><line x1="4" y1="10" x2="16" y2="10" stroke="currentColor"/><line x1="4" y1="15" x2="16" y2="15" stroke="currentColor"/></svg>;
 
@@ -49,6 +61,8 @@ function App() {
   const [printGuia, setPrintGuia] = useState<Guia | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [dadosCarregados, setDadosCarregados] = useState(false);
+
   /* ============================
      🔥 FIREBASE — GUIAS (REALTIME)
   ============================ */
@@ -64,22 +78,90 @@ function App() {
   }, []);
 
   /* ============================
-     🔒 CADASTROS LOCAIS
+     🔥 FIREBASE — ÓRGÃOS (REALTIME)
   ============================ */
   useEffect(() => {
-    setOrgaos(JSON.parse(localStorage.getItem('digra_orgaos') || 'null') || INITIAL_ORGAOS);
-    setOperadores(JSON.parse(localStorage.getItem('digra_operadores') || 'null') || INITIAL_OPERADORES);
-    setResponsaveis(JSON.parse(localStorage.getItem('digra_responsaveis') || 'null') || INITIAL_RESPONSAVEIS);
-    setServicos(JSON.parse(localStorage.getItem('digra_servicos') || 'null') || INITIAL_SERVICOS);
+    const unsubscribe = ouvirOrgaos((data) => {
+      setOrgaos(data as Orgao[]);
+      setDadosCarregados(true);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  /* ============================
+     🔥 FIREBASE — OPERADORES (REALTIME)
+  ============================ */
+  useEffect(() => {
+    const unsubscribe = ouvirOperadores((data) => {
+      setOperadores(data as Operador[]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  /* ============================
+     🔥 FIREBASE — RESPONSÁVEIS (REALTIME)
+  ============================ */
+  useEffect(() => {
+    const unsubscribe = ouvirResponsaveis((data) => {
+      setResponsaveis(data as ResponsavelExterno[]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  /* ============================
+     🔥 FIREBASE — SERVIÇOS (REALTIME)
+  ============================ */
+  useEffect(() => {
+    const unsubscribe = ouvirServicos((data) => {
+      setServicos(data as ServicoPreco[]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  /* ============================
+     🔒 NUMERAÇÃO (AINDA NO LOCALSTORAGE)
+  ============================ */
+  useEffect(() => {
     const seq = localStorage.getItem('digra_next_sequence');
     if (seq) setNextSequence(Number(seq));
   }, []);
 
-  useEffect(() => localStorage.setItem('digra_orgaos', JSON.stringify(orgaos)), [orgaos]);
-  useEffect(() => localStorage.setItem('digra_operadores', JSON.stringify(operadores)), [operadores]);
-  useEffect(() => localStorage.setItem('digra_responsaveis', JSON.stringify(responsaveis)), [responsaveis]);
-  useEffect(() => localStorage.setItem('digra_servicos', JSON.stringify(servicos)), [servicos]);
-  useEffect(() => localStorage.setItem('digra_next_sequence', nextSequence.toString()), [nextSequence]);
+  useEffect(() => {
+    localStorage.setItem('digra_next_sequence', nextSequence.toString());
+  }, [nextSequence]);
+
+  /* ============================
+     🚀 MIGRAÇÃO AUTOMÁTICA
+     Se o Firebase estiver vazio, importa do localStorage
+  ============================ */
+  useEffect(() => {
+    if (!dadosCarregados) return;
+
+    // Se Firebase está vazio, importa do localStorage
+    if (orgaos.length === 0) {
+      const orgaosLocal = JSON.parse(localStorage.getItem('digra_orgaos') || 'null') || INITIAL_ORGAOS;
+      orgaosLocal.forEach((o: Orgao) => salvarOrgao(o));
+    }
+
+    if (operadores.length === 0) {
+      const operadoresLocal = JSON.parse(localStorage.getItem('digra_operadores') || 'null') || INITIAL_OPERADORES;
+      operadoresLocal.forEach((o: Operador) => salvarOperador(o));
+    }
+
+    if (responsaveis.length === 0) {
+      const responsaveisLocal = JSON.parse(localStorage.getItem('digra_responsaveis') || 'null') || INITIAL_RESPONSAVEIS;
+      responsaveisLocal.forEach((r: ResponsavelExterno) => salvarResponsavel(r));
+    }
+
+    if (servicos.length === 0) {
+      const servicosLocal = JSON.parse(localStorage.getItem('digra_servicos') || 'null') || INITIAL_SERVICOS;
+      servicosLocal.forEach((s: ServicoPreco) => salvarServico(s));
+    }
+  }, [dadosCarregados]);
 
   /* ============================
      🔧 GUIAS
@@ -105,6 +187,58 @@ function App() {
   const handleDeleteGuia = async (id: string) => {
     if (window.confirm('Deseja excluir esta guia?')) {
       await excluirGuia(id);
+    }
+  };
+
+  /* ============================
+     🔧 ÓRGÃOS
+  ============================ */
+  const handleSaveOrgao = async (orgao: Orgao) => {
+    await salvarOrgao(orgao);
+  };
+
+  const handleDeleteOrgao = async (id: string) => {
+    if (window.confirm('Deseja excluir este órgão?')) {
+      await excluirOrgao(id);
+    }
+  };
+
+  /* ============================
+     🔧 OPERADORES
+  ============================ */
+  const handleSaveOperador = async (operador: Operador) => {
+    await salvarOperador(operador);
+  };
+
+  const handleDeleteOperador = async (id: string) => {
+    if (window.confirm('Deseja excluir este operador?')) {
+      await excluirOperador(id);
+    }
+  };
+
+  /* ============================
+     🔧 RESPONSÁVEIS
+  ============================ */
+  const handleSaveResponsavel = async (responsavel: ResponsavelExterno) => {
+    await salvarResponsavel(responsavel);
+  };
+
+  const handleDeleteResponsavel = async (id: string) => {
+    if (window.confirm('Deseja excluir este responsável?')) {
+      await excluirResponsavel(id);
+    }
+  };
+
+  /* ============================
+     🔧 SERVIÇOS
+  ============================ */
+  const handleSaveServico = async (servico: ServicoPreco) => {
+    await salvarServico(servico);
+  };
+
+  const handleDeleteServico = async (id: string) => {
+    if (window.confirm('Deseja excluir este serviço?')) {
+      await excluirServico(id);
     }
   };
 
@@ -179,7 +313,7 @@ function App() {
             operadoresList={operadores}
             responsaveisList={responsaveis}
             servicosList={servicos}
-            onAddGlobalServico={(s) => setServicos([...servicos, s])}
+            onAddGlobalServico={handleSaveServico}
           />
         )}
 
@@ -208,11 +342,44 @@ function App() {
           </>
         )}
 
-        {activeTab === 'orgaos' && <OrgaoManager orgaos={orgaos} onSave={o => setOrgaos([...orgaos, o])} onDelete={id => setOrgaos(orgaos.filter(o => o.id !== id))} />}
-        {activeTab === 'servicos' && <ServicoManager servicos={servicos} onSave={s => setServicos([...servicos, s])} onDelete={id => setServicos(servicos.filter(s => s.id !== id))} />}
-        {activeTab === 'operadores' && <OperadorManager operadores={operadores} onSave={o => setOperadores([...operadores, o])} onDelete={id => setOperadores(operadores.filter(o => o.id !== id))} />}
-        {activeTab === 'externos' && <ResponsavelManager responsaveis={responsaveis} onSave={r => setResponsaveis([...responsaveis, r])} onDelete={id => setResponsaveis(responsaveis.filter(r => r.id !== id))} />}
-        {activeTab === 'config' && <ConfigManager currentNextSequence={nextSequence} onSave={setNextSequence} />}
+        {activeTab === 'orgaos' && (
+          <OrgaoManager 
+            orgaos={orgaos} 
+            onSave={handleSaveOrgao} 
+            onDelete={handleDeleteOrgao} 
+          />
+        )}
+
+        {activeTab === 'servicos' && (
+          <ServicoManager 
+            servicos={servicos} 
+            onSave={handleSaveServico} 
+            onDelete={handleDeleteServico} 
+          />
+        )}
+
+        {activeTab === 'operadores' && (
+          <OperadorManager 
+            operadores={operadores} 
+            onSave={handleSaveOperador} 
+            onDelete={handleDeleteOperador} 
+          />
+        )}
+
+        {activeTab === 'externos' && (
+          <ResponsavelManager 
+            responsaveis={responsaveis} 
+            onSave={handleSaveResponsavel} 
+            onDelete={handleDeleteResponsavel} 
+          />
+        )}
+
+        {activeTab === 'config' && (
+          <ConfigManager 
+            currentNextSequence={nextSequence} 
+            onSave={setNextSequence} 
+          />
+        )}
       </main>
 
       {printGuia && <GuiaPrint guia={printGuia} onClose={() => setPrintGuia(null)} />}
