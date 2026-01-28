@@ -94,12 +94,45 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
         #logo-pjerj { 
           filter: grayscale(100%) contrast(110%); 
         }
+        
+        /* Configuração de impressão A5 retrato */
+        @page {
+          size: A5 portrait;
+          margin: 10mm;
+        }
+        
         @media print { 
-          #logo-pjerj { filter: grayscale(100%) contrast(110%); } 
-          .no-print-content { display: none !important; }
+          html, body {
+            width: 148mm;
+            height: 210mm;
+          }
+          
+          #logo-pjerj { 
+            filter: grayscale(100%) contrast(110%); 
+          } 
+          
+          .no-print, .no-print-content { 
+            display: none !important; 
+          }
+          
+          .print-page {
+            page-break-after: always;
+            width: 148mm;
+            height: 210mm;
+            padding: 10mm;
+            box-sizing: border-box;
+          }
+          
+          .print-page:last-child {
+            page-break-after: auto;
+          }
+          
+          .print-root {
+            width: 148mm;
+          }
         }
       `}</style>
-
+      
       {/* Floating Controls */}
       <div className="fixed top-4 right-4 z-50 no-print flex gap-2">
         <button 
