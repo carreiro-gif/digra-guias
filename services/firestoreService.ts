@@ -13,7 +13,6 @@ import { db } from "./firebase";
    GUIAS
 ========================= */
 
-// nomes internos (corretos)
 export const saveGuiaFS = async (guia: any) => {
   await setDoc(doc(db, "guias", guia.id), {
     ...guia,
@@ -35,7 +34,7 @@ export const deleteGuiaFS = async (id: string) => {
   await deleteDoc(doc(db, "guias", id));
 };
 
-// 🔹 ALIASES para compatibilidade com App.tsx
+// Aliases para compatibilidade
 export const salvarGuia = saveGuiaFS;
 export const ouvirGuias = subscribeGuias;
 export const excluirGuia = deleteGuiaFS;
@@ -58,6 +57,10 @@ export const ouvirOrgaos = (callback: (dados: any[]) => void) => {
   });
 };
 
+export const excluirOrgao = async (id: string) => {
+  await deleteDoc(doc(db, "orgaos", id));
+};
+
 /* =========================
    OPERADORES
 ========================= */
@@ -74,6 +77,10 @@ export const ouvirOperadores = (callback: (dados: any[]) => void) => {
     }));
     callback(lista);
   });
+};
+
+export const excluirOperador = async (id: string) => {
+  await deleteDoc(doc(db, "operadores", id));
 };
 
 /* =========================
@@ -94,6 +101,10 @@ export const ouvirResponsaveis = (callback: (dados: any[]) => void) => {
   });
 };
 
+export const excluirResponsavel = async (id: string) => {
+  await deleteDoc(doc(db, "externos", id));
+};
+
 /* =========================
    SERVIÇOS
 ========================= */
@@ -110,4 +121,8 @@ export const ouvirServicos = (callback: (dados: any[]) => void) => {
     }));
     callback(lista);
   });
+};
+
+export const excluirServico = async (id: string) => {
+  await deleteDoc(doc(db, "servicos", id));
 };
