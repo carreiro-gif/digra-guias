@@ -93,9 +93,13 @@ const IconHash = () => (
   </svg>
 );
 
-// LOGO
+// LOGO (ajuste: centragem perfeita + contorno branco levemente mais grosso)
 const LogoDigra = ({ size = 'large' }: { size?: 'small' | 'large' }) => (
-  <div className={`rounded-full bg-[#004aad] border-2 border-white flex items-center justify-center font-bold text-white ${size === 'large' ? 'w-20 h-20' : 'w-10 h-10 text-xs'}`}>
+  <div
+    className={`inline-flex items-center justify-center rounded-full bg-[#004aad] border-white font-bold text-white leading-none ${
+      size === 'large' ? 'w-20 h-20' : 'w-10 h-10 text-xs'
+    } border-[3px]`}
+  >
     DIGRA
   </div>
 );
@@ -305,9 +309,9 @@ function App() {
     <div className="flex h-screen bg-slate-100">
       {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 text-white hidden md:flex flex-col">
-        <div className="p-6 text-center border-b border-slate-700">
+        <div className="p-6 border-b border-slate-700 flex flex-col items-center">
           <LogoDigra />
-          <h1 className="text-xs mt-3 tracking-widest">GUIAS DE REMESSA</h1>
+          <h1 className="text-xs mt-3 tracking-widest text-center">GUIAS DE REMESSA</h1>
         </div>
 
         <nav className="p-4 flex flex-col gap-2">
