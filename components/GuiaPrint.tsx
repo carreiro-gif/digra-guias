@@ -102,7 +102,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
         }
       `}</style>
 
-      {/* Floating Controls */}
+      {/* Controles flutuantes */}
       <div className="fixed top-4 right-4 z-50 no-print flex gap-2">
         <button 
           onClick={() => window.print()}
@@ -125,19 +125,19 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
             
             {/* --- HEADER --- */}
             <header className="flex flex-row items-center border-b border-black pb-4 mb-4">
-              {/* Logo PJERJ */}
+              {/* Logo PJERJ (reduzida para abrir espaço) */}
               <div className="w-[20%] flex justify-start items-center pl-2">
                 <img 
                   src={LOGO_PJERJ_BASE64}
                   alt="PJERJ" 
                   className="w-auto h-auto object-contain"
-                  style={{ maxHeight: '24mm', maxWidth: '24mm' }}
+                  style={{ maxHeight: '18mm', maxWidth: '18mm' }}
                 />
               </div>
 
-              {/* Institutional Text — Opção A (centralizado, maior sutilmente) */}
-              <div className="w-[50%] text-[10.5px] font-bold leading-snug tracking-wide uppercase text-center flex flex-col justify-center">
-                <span>Poder Judiciário do Estado do Rio de Janeiro</span>
+              {/* Texto institucional — centralizado, com respiro e primeira linha sem quebra */}
+              <div className="w-[50%] text-[10px] font-bold leading-snug tracking-wide uppercase text-center flex flex-col justify-center pl-3">
+                <span className="whitespace-nowrap">Poder Judiciário do Estado do Rio de Janeiro</span>
                 <span>Diretoria Geral de Logística</span>
                 <span>Departamento de Patrimônio e Material</span>
                 <span className="mt-0.5">Divisão de Produção Gráfica (DIGRA)</span>
@@ -151,7 +151,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
               </div>
             </header>
 
-            {/* Title */}
+            {/* Título */}
             <div className="text-center mb-4">
               <h1
                 className="text-[22px] font-bold uppercase border border-black inline-block tracking-wider"
@@ -162,7 +162,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
               </h1>
             </div>
 
-            {/* --- INFO BLOCKS --- */}
+            {/* --- BLOCO DE INFORMAÇÕES --- */}
             <section className="text-[11px] mb-4 space-y-1 px-2">
               <div className="flex">
                 <span className="font-bold w-28">Órgão Requisitante:</span>
@@ -180,23 +180,23 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
               </div>
             </section>
 
-            {/* --- TABLE --- */}
+            {/* --- TABELA --- */}
             <div className="flex-1 flex flex-col px-2">
-              <table className="w-full border-collapse text-[10px]">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b border-black">
+                  <tr className="border-b border-black text-[11.5px]">
                     <th className="text-center py-1 border-r border-black w-[15%] font-bold">Qtde</th>
                     <th className="text-left px-2 py-1 border-r border-black w-[25%] font-bold">Tipo</th>
                     <th className="text-left px-2 py-1 w-[60%] font-bold">Descrição</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-[11px]">
                   {page.items.map((item, idx) => (
                     <tr key={idx} className="border-b border-gray-300 last:border-black">
                       <td className="text-center py-2 border-r border-black align-top font-medium">{item.quantidade}</td>
                       <td className="px-2 py-2 border-r border-black align-top font-medium">{item.descricao}</td>
                       <td className="px-2 py-2 align-top">
-                        <div className="font-normal text-[10px]">{item.detalhes || '-'}</div>
+                        <div className="font-normal">{item.detalhes || '-'}</div>
                       </td>
                     </tr>
                   ))}
@@ -210,7 +210,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
               )}
             </div>
 
-            {/* --- FOOTER (RECEIPT) --- */}
+            {/* --- RODAPÉ (RECIBO) --- */}
             {page.isLast && (
               <footer className="mt-auto pt-2 px-2 pb-2">
                 {guia.observacoes && (
@@ -244,4 +244,3 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
     </div>
   );
 };
-``
