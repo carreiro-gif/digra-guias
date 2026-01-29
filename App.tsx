@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Guia, Orgao, Operador, ResponsavelExterno, ServicoPreco } from './types';
 
+import { Login } from './components/Login';
 import { GuiaForm } from './components/GuiaForm';
 import { GuiaPrint } from './components/GuiaPrint';
 import { OrgaoManager } from './components/OrgaoManager';
@@ -105,6 +106,12 @@ const IconFilter = () => (
   </svg>
 );
 
+const IconLogout = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M9 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5M16 17l4-4-4-4M20 13H9" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
 // LOGO (ajuste: centragem perfeita + contorno branco levemente mais grosso)
 const LogoDigra = ({ size = 'large' }: { size?: 'small' | 'large' }) => (
   <div
@@ -117,6 +124,10 @@ const LogoDigra = ({ size = 'large' }: { size?: 'small' | 'large' }) => (
 );
 
 function App() {
+  // 🔐 Estados de autenticação
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [activeTab, setActiveTab] =
     useState<'list' | 'form' | 'orgaos' | 'operadores' | 'externos' | 'servicos' | 'config'>('list');
 
@@ -139,10 +150,42 @@ function App() {
 
   const [dadosCarregados, setDadosCarregados] = useState(false);
 
+  // 🔐 Verificar se já está logado ao carregar
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('digra_auth');
+    if (savedAuth) {
+      const auth = JSON.parse(savedAuth);
+      const now = Date.now();
+      if (now - auth.timestamp < 30 * 24 * 60 * 60 * 1000) {
+        setIsLoggedIn(true);
+        setIsAdmin(auth.isAdmin);
+      } else {
+        localStorage.removeItem('digra_auth');
+      }
+    }
+  }, []);
+
+  // 🔐 Handler de login
+  const handleLogin = (adminStatus: boolean) => {
+    setIsLoggedIn(true);
+    setIsAdmin(adminStatus);
+  };
+
+  // 🔐 Handler de logout
+  const handleLogout = () => {
+    if (window.confirm('Deseja realmente sair?')) {
+      localStorage.removeItem('digra_auth');
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+    }
+  };
+
   /* ============================
      🔥 FIREBASE — GUIAS (REALTIME)
   ============================ */
   useEffect(() => {
+    if (!isLoggedIn) return;
+
     const unsubscribe = ouvirGuias((data) => {
       const saneadas = data.filter(
         (g) => g && g.orgaoSnapshot && g.orgaoSnapshot.sigla
@@ -151,52 +194,60 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isLoggedIn]);
 
   /* ============================
      🔥 FIREBASE — ÓRGÃOS (REALTIME)
   ============================ */
   useEffect(() => {
+    if (!isLoggedIn) return;
+
     const unsubscribe = ouvirOrgaos((data) => {
       setOrgaos(data as Orgao[]);
       setDadosCarregados(true);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isLoggedIn]);
 
   /* ============================
      🔥 FIREBASE — OPERADORES (REALTIME)
   ============================ */
   useEffect(() => {
+    if (!isLoggedIn) return;
+
     const unsubscribe = ouvirOperadores((data) => {
       setOperadores(data as Operador[]);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isLoggedIn]);
 
   /* ============================
      🔥 FIREBASE — RESPONSÁVEIS (REALTIME)
   ============================ */
   useEffect(() => {
+    if (!isLoggedIn) return;
+
     const unsubscribe = ouvirResponsaveis((data) => {
       setResponsaveis(data as ResponsavelExterno[]);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isLoggedIn]);
 
   /* ============================
      🔥 FIREBASE — SERVIÇOS (REALTIME)
   ============================ */
   useEffect(() => {
+    if (!isLoggedIn) return;
+
     const unsubscribe = ouvirServicos((data) => {
       setServicos(data as ServicoPreco[]);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isLoggedIn]);
 
   /* ============================
      🔒 NUMERAÇÃO (AINDA NO LOCALSTORAGE)
@@ -215,7 +266,7 @@ function App() {
      Se o Firebase estiver vazio, importa do localStorage
   ============================ */
   useEffect(() => {
-    if (!dadosCarregados) return;
+    if (!dadosCarregados || !isLoggedIn) return;
 
     // Se Firebase está vazio, importa do localStorage
     if (orgaos.length === 0) {
@@ -237,7 +288,7 @@ function App() {
       const servicosLocal = JSON.parse(localStorage.getItem('digra_servicos') || 'null') || INITIAL_SERVICOS;
       servicosLocal.forEach((s: ServicoPreco) => salvarServico(s));
     }
-  }, [dadosCarregados]);
+  }, [dadosCarregados, isLoggedIn]);
 
   /* ============================
      🔧 GUIAS
@@ -261,6 +312,10 @@ function App() {
   };
 
   const handleDeleteGuia = async (id: string) => {
+    if (!isAdmin) {
+      alert('⚠️ Apenas administradores podem excluir guias');
+      return;
+    }
     if (window.confirm('Deseja excluir esta guia?')) {
       await excluirGuia(id);
     }
@@ -274,6 +329,10 @@ function App() {
   };
 
   const handleDeleteOrgao = async (id: string) => {
+    if (!isAdmin) {
+      alert('⚠️ Apenas administradores podem excluir órgãos');
+      return;
+    }
     if (window.confirm('Deseja excluir este órgão?')) {
       await excluirOrgao(id);
     }
@@ -287,6 +346,10 @@ function App() {
   };
 
   const handleDeleteOperador = async (id: string) => {
+    if (!isAdmin) {
+      alert('⚠️ Apenas administradores podem excluir operadores');
+      return;
+    }
     if (window.confirm('Deseja excluir este operador?')) {
       await excluirOperador(id);
     }
@@ -300,6 +363,10 @@ function App() {
   };
 
   const handleDeleteResponsavel = async (id: string) => {
+    if (!isAdmin) {
+      alert('⚠️ Apenas administradores podem excluir responsáveis');
+      return;
+    }
     if (window.confirm('Deseja excluir este responsável?')) {
       await excluirResponsavel(id);
     }
@@ -313,6 +380,10 @@ function App() {
   };
 
   const handleDeleteServico = async (id: string) => {
+    if (!isAdmin) {
+      alert('⚠️ Apenas administradores podem excluir serviços');
+      return;
+    }
     if (window.confirm('Deseja excluir este serviço?')) {
       await excluirServico(id);
     }
@@ -413,6 +484,11 @@ function App() {
     setFilterDataFim('');
   };
 
+  // 🔐 Se não estiver logado, mostra tela de login
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <div className="flex h-screen bg-slate-100">
       {/* SIDEBAR */}
@@ -420,9 +496,14 @@ function App() {
         <div className="p-6 border-b border-slate-700 flex flex-col items-center">
           <LogoDigra />
           <h1 className="text-xs mt-3 tracking-widest text-center">GUIAS DE REMESSA</h1>
+          {isAdmin && (
+            <div className="mt-2 text-xs bg-red-600 px-2 py-1 rounded">
+              👑 ADMIN
+            </div>
+          )}
         </div>
 
-        <nav className="p-4 flex flex-col gap-2">
+        <nav className="p-4 flex flex-col gap-2 flex-1">
           {/* Nova Guia */}
           <button
             onClick={() => setActiveTab("form")}
@@ -507,18 +588,31 @@ function App() {
             <span>Externos</span>
           </button>
 
-          {/* Numeração */}
-          <button
-            onClick={() => setActiveTab("config")}
-            className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
-              activeTab === 'config' 
-                ? 'bg-blue-600 text-white' 
-                : 'text-slate-300 hover:bg-slate-800'
-            }`}
-          >
-            <IconHash />
-            <span>Numeração</span>
-          </button>
+          {/* Numeração (só admin) */}
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab("config")}
+              className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+                activeTab === 'config' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              <IconHash />
+              <span>Numeração</span>
+            </button>
+          )}
+
+          {/* Botão Sair */}
+          <div className="mt-auto pt-4 border-t border-slate-700">
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-3 rounded-lg flex items-center gap-3 transition-colors text-red-400 hover:bg-slate-800"
+            >
+              <IconLogout />
+              <span>Sair</span>
+            </button>
+          </div>
         </nav>
       </aside>
 
@@ -552,14 +646,16 @@ function App() {
                   <IconDownload />
                   CSV
                 </button>
-                <button
-                  onClick={handleExportarDados}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm"
-                  title="Backup completo (JSON)"
-                >
-                  <IconDownload />
-                  Backup
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={handleExportarDados}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm"
+                    title="Backup completo (JSON)"
+                  >
+                    <IconDownload />
+                    Backup
+                  </button>
+                )}
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className={`px-4 py-2 rounded-lg flex items-center gap-2 text-sm ${
@@ -665,12 +761,14 @@ function App() {
                     >
                       Editar
                     </button>
-                    <button 
-                      onClick={() => handleDeleteGuia(g.id)}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      Excluir
-                    </button>
+                    {isAdmin && (
+                      <button 
+                        onClick={() => handleDeleteGuia(g.id)}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        Excluir
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -710,7 +808,7 @@ function App() {
           />
         )}
 
-        {activeTab === 'config' && (
+        {activeTab === 'config' && isAdmin && (
           <ConfigManager 
             currentNextSequence={nextSequence} 
             onSave={setNextSequence} 
