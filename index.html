@@ -11,7 +11,6 @@
         font-family: 'Inter', sans-serif;
         background-color: #f1f5f9;
       }
-
       /* Screen Preview Styles for Pages */
       .print-page {
         width: 148mm;
@@ -25,7 +24,6 @@
         position: relative;
         color: black;
       }
-
       @media print {
         @page {
           size: A5 portrait;
@@ -38,7 +36,6 @@
           print-color-adjust: exact;
           color: #000 !important;
         }
-
         .no-print {
           display: none !important;
         }
@@ -50,7 +47,6 @@
           left: 0;
           width: 100%;
         }
-
         .print-page {
           margin: 0;
           box-shadow: none;
@@ -63,12 +59,10 @@
           padding: 0; /* Let @page handle margins or keep internal padding if @page is 0 */
           border: none;
         }
-
         .print-page:last-child {
           page-break-after: auto;
           break-after: auto;
         }
-
         /* Force Black and White Elements */
         * {
           border-color: #000 !important;
@@ -102,7 +96,6 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
