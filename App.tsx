@@ -737,8 +737,13 @@ function App() {
                 Nenhuma guia encontrada com os filtros aplicados
               </div>
             ) : (
-              filteredGuias.map(g => (
-                <div key={g.id} className="bg-white p-3 rounded shadow mb-2 flex justify-between items-center">
+             {filteredGuias
+  .sort((a, b) => {
+    // Ordena por número decrescente (2026/0010, 2026/0009, ...)
+    return b.numero.localeCompare(a.numero);
+  })
+  .map(g => (
+  <div key={g.id} className="bg-white p-3 rounded shadow mb-2 flex justify-between items-center">
                   <div>
                     <div>
                       <strong>{g.numero}</strong> — {g.orgaoSnapshot.sigla}
