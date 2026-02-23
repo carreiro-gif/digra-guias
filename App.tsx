@@ -39,76 +39,76 @@ import {
 // ÍCONES SVG
 const IconPlus = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <path d="M10 5v10M5 10h10" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
+    <path d="M10 5v10M5 10h10" stroke="currentColor" strokeWidth="2" />
   </svg>
 );
 
 const IconList = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <line x1="4" y1="5" x2="16" y2="5" stroke="currentColor" strokeWidth="2"/>
-    <line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" strokeWidth="2"/>
-    <line x1="4" y1="15" x2="16" y2="15" stroke="currentColor" strokeWidth="2"/>
+    <line x1="4" y1="5" x2="16" y2="5" stroke="currentColor" strokeWidth="2" />
+    <line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" strokeWidth="2" />
+    <line x1="4" y1="15" x2="16" y2="15" stroke="currentColor" strokeWidth="2" />
   </svg>
 );
 
 const IconBuilding = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <rect x="4" y="2" width="12" height="16" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <rect x="7" y="5" width="2" height="2" fill="currentColor"/>
-    <rect x="11" y="5" width="2" height="2" fill="currentColor"/>
-    <rect x="7" y="9" width="2" height="2" fill="currentColor"/>
-    <rect x="11" y="9" width="2" height="2" fill="currentColor"/>
-    <rect x="7" y="13" width="2" height="4" fill="currentColor"/>
-    <rect x="11" y="13" width="2" height="4" fill="currentColor"/>
+    <rect x="4" y="2" width="12" height="16" stroke="currentColor" strokeWidth="2" fill="none" />
+    <rect x="7" y="5" width="2" height="2" fill="currentColor" />
+    <rect x="11" y="5" width="2" height="2" fill="currentColor" />
+    <rect x="7" y="9" width="2" height="2" fill="currentColor" />
+    <rect x="11" y="9" width="2" height="2" fill="currentColor" />
+    <rect x="7" y="13" width="2" height="4" fill="currentColor" />
+    <rect x="11" y="13" width="2" height="4" fill="currentColor" />
   </svg>
 );
 
 const IconTag = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M3 10L10 3L17 10L10 17L3 10Z" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <circle cx="10" cy="10" r="1.5" fill="currentColor"/>
+    <path d="M3 10L10 3L17 10L10 17L3 10Z" stroke="currentColor" strokeWidth="2" fill="none" />
+    <circle cx="10" cy="10" r="1.5" fill="currentColor" />
   </svg>
 );
 
 const IconUsers = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="7" cy="6" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <path d="M2 16c0-2.5 2-4 5-4s5 1.5 5 4" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <circle cx="14" cy="7" r="2" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <path d="M18 16c0-1.5-1-3-3-3" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <circle cx="7" cy="6" r="3" stroke="currentColor" strokeWidth="2" fill="none" />
+    <path d="M2 16c0-2.5 2-4 5-4s5 1.5 5 4" stroke="currentColor" strokeWidth="2" fill="none" />
+    <circle cx="14" cy="7" r="2" stroke="currentColor" strokeWidth="2" fill="none" />
+    <path d="M18 16c0-1.5-1-3-3-3" stroke="currentColor" strokeWidth="2" fill="none" />
   </svg>
 );
 
 const IconUserCheck = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <path d="M2 16c0-2.5 2-4 6-4s6 1.5 6 4" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <path d="M14 8l2 2 4-4" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="2" fill="none" />
+    <path d="M2 16c0-2.5 2-4 6-4s6 1.5 6 4" stroke="currentColor" strokeWidth="2" fill="none" />
+    <path d="M14 8l2 2 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
   </svg>
 );
 
 const IconHash = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M7 3L5 17M15 3L13 17M3 7h14M2 13h14" stroke="currentColor" strokeWidth="2"/>
+    <path d="M7 3L5 17M15 3L13 17M3 7h14M2 13h14" stroke="currentColor" strokeWidth="2" />
   </svg>
 );
 
 const IconDownload = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M10 3v10M10 13l-4-4M10 13l4-4M3 17h14" stroke="currentColor" strokeWidth="2"/>
+    <path d="M10 3v10M10 13l-4-4M10 13l4-4M3 17h14" stroke="currentColor" strokeWidth="2" />
   </svg>
 );
 
 const IconFilter = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M3 4h14M5 10h10M8 16h4" stroke="currentColor" strokeWidth="2"/>
+    <path d="M3 4h14M5 10h10M8 16h4" stroke="currentColor" strokeWidth="2" />
   </svg>
 );
 
 const IconLogout = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M9 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5M16 17l4-4-4-4M20 13H9" stroke="currentColor" strokeWidth="2"/>
+    <path d="M9 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5M16 17l4-4-4-4M20 13H9" stroke="currentColor" strokeWidth="2" />
   </svg>
 );
 
@@ -288,7 +288,7 @@ function App() {
       const servicosLocal = JSON.parse(localStorage.getItem('digra_servicos') || 'null') || INITIAL_SERVICOS;
       servicosLocal.forEach((s: ServicoPreco) => salvarServico(s));
     }
-  }, [dadosCarregados, isLoggedIn]);
+  }, [dadosCarregados, isLoggedIn, operadores.length, orgaos.length, responsaveis.length, servicos.length]);
 
   /* ============================
      🔧 GUIAS
@@ -313,7 +313,7 @@ function App() {
 
   const handleDeleteGuia = async (id: string) => {
     if (!isAdmin) {
-      alert(⚠️ Apenas administradores podem excluir guias');
+      alert('⚠️ Apenas administradores podem excluir guias');
       return;
     }
     if (window.confirm('Deseja excluir esta guia?')) {
@@ -394,7 +394,7 @@ function App() {
   ============================ */
   const filteredGuias = guias.filter(g => {
     // Busca por texto (número, órgão, solicitante, observações)
-    const matchesSearch = 
+    const matchesSearch =
       g.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
       g.orgaoSnapshot?.sigla?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       g.orgaoSnapshot?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -737,41 +737,49 @@ function App() {
                 Nenhuma guia encontrada com os filtros aplicados
               </div>
             ) : (
-              filteredGuias.map(g => (
-                <div key={g.id} className="bg-white p-3 rounded shadow mb-2 flex justify-between items-center">
-                  <div>
-                    <div>
-                      <strong>{g.numero}</strong> — {g.orgaoSnapshot.sigla}
+              <>
+                {filteredGuias
+                  .slice() // evita mutar o array original
+                  .sort((a, b) => {
+                    // Ordena por número decrescente, ex.: 2026/0010, 2026/0009, ...
+                    return String(b.numero).localeCompare(String(a.numero), 'pt-BR');
+                  })
+                  .map((g) => (
+                    <div key={g.id} className="bg-white p-3 rounded shadow mb-2 flex justify-between items-center">
+                      <div>
+                        <div>
+                          <strong>{g.numero}</strong> — {g.orgaoSnapshot.sigla}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {new Date(g.dataEmissao).toLocaleDateString('pt-BR')}
+                          {g.solicitante && ` • ${g.solicitante}`}
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => setPrintGuia(g)}
+                          className="text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          Imprimir
+                        </button>
+                        <button 
+                          onClick={() => { setEditingGuia(g); setActiveTab('form'); }}
+                          className="text-green-600 hover:text-green-800 text-sm"
+                        >
+                          Editar
+                        </button>
+                        {isAdmin && (
+                          <button 
+                            onClick={() => handleDeleteGuia(g.id)}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Excluir
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {new Date(g.dataEmissao).toLocaleDateString('pt-BR')}
-                      {g.solicitante && ` • ${g.solicitante}`}
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={() => setPrintGuia(g)}
-                      className="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      Imprimir
-                    </button>
-                    <button 
-                      onClick={() => { setEditingGuia(g); setActiveTab('form'); }}
-                      className="text-green-600 hover:text-green-800 text-sm"
-                    >
-                      Editar
-                    </button>
-                    {isAdmin && (
-                      <button 
-                        onClick={() => handleDeleteGuia(g.id)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Excluir
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
+                  ))}
+              </>
             )}
           </>
         )}
