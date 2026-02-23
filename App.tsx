@@ -313,7 +313,7 @@ function App() {
 
   const handleDeleteGuia = async (id: string) => {
     if (!isAdmin) {
-      alert('⚠️ Apenas administradores podem excluir guias');
+      alert(⚠️ Apenas administradores podem excluir guias');
       return;
     }
     if (window.confirm('Deseja excluir esta guia?')) {
@@ -737,20 +737,8 @@ function App() {
                 Nenhuma guia encontrada com os filtros aplicados
               </div>
             ) : (
-             
-{filteredGuias
-      .slice() // opcional: evita mutar o array original
-      .sort((a, b) => {
-        // sua lógica de ordenação aqui
-        // Exemplo: mais recentes primeiro
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      })
-      .map(guia => (
-        <GuiaCard key={guia.id} guia={guia} />
-      ))
-    }
-  </>
-)
+              filteredGuias.map(g => (
+                <div key={g.id} className="bg-white p-3 rounded shadow mb-2 flex justify-between items-center">
                   <div>
                     <div>
                       <strong>{g.numero}</strong> — {g.orgaoSnapshot.sigla}
