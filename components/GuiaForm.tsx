@@ -426,7 +426,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
                    <label className="text-xs text-slate-500 block">Qtd</label>
                    <input 
                       type="number" 
-                      min="1"
+                      min="0"
                       className="w-full border border-slate-300 rounded p-1 text-sm"
                       value={item.quantidade}
                       onChange={(e) => updateItem(index, 'quantidade', parseInt(e.target.value))}
