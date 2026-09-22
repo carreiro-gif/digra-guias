@@ -429,8 +429,8 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
                       min="0"
                       className="w-full border border-slate-300 rounded p-1 text-sm"
                       value={item.quantidade}
-                      onChange={(e) => updateItem(index, 'quantidade', parseInt(e.target.value))}
-                   />
+                      onChange={(e) => updateItem(index, 'quantidade', parseInt(e.target.value) || 0)}
+/>
                 </div>
 
                 <div className="md:col-span-6">
