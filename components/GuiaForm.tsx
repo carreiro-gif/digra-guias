@@ -29,30 +29,55 @@ const getSubtiposDoServico = (descricao: string): string[] | null => {
 };
 
 // ===========================
-// 💾 AUTOCOMPLETE SOLICITANTE
+// 👥 RESPONSÁVEIS PADRÃO
+// ===========================
+const RESPONSAVEIS_PADRAO = [
+  'Valmir Marcante',
+  'Márcio Souza',
+  'Rolliug de Assis',
+  'André José de Carvalho',
+];
+
+// ===========================
+// 💾 AUTOCOMPLETE - SOLICITANTE
 // ===========================
 const LS_SOLICITANTES = 'digra_solicitantes_conhecidos';
-
 const getSolicitantesConhecidos = (): string[] => {
-  try { return JSON.parse(localStorage.getItem(LS_SOLICITANTES) || '[]'); }
-  catch { return []; }
+  try { return JSON.parse(localStorage.getItem(LS_SOLICITANTES) || '[]'); } catch { return []; }
 };
-
 const salvarSolicitanteLS = (nome: string) => {
   if (!nome.trim()) return;
   const lista = getSolicitantesConhecidos();
-  if (!lista.map(n => n.toLowerCase()).includes(nome.trim().toLowerCase())) {
+  if (!lista.map(n => n.toLowerCase()).includes(nome.trim().toLowerCase()))
     localStorage.setItem(LS_SOLICITANTES, JSON.stringify([...lista, nome.trim()].sort()));
-  }
 };
 
 // ===========================
-// TIPOS
+// 💾 AUTOCOMPLETE - DETALHES
+// ===========================
+const LS_DETALHES = 'digra_detalhes_conhecidos';
+const getDetalhesConhecidos = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(LS_DETALHES) || '[]'); } catch { return []; }
+};
+const salvarDetalheLS = (d: string) => {
+  if (!d.trim()) return;
+  const lista = getDetalhesConhecidos();
+  if (!lista.map(x => x.toLowerCase()).includes(d.trim().toLowerCase()))
+    localStorage.setItem(LS_DETALHES, JSON.stringify([...lista, d.trim()].sort()));
+};
+
+// ===========================
+// TIPOS INTERNOS
 // ===========================
 interface ItemExtras {
   selectedSubtype: string;
   customSubtype: string;
   tamanho: string;
+  // Para autocomplete de serviço
+  serviceText: string;       // texto digitado no campo de busca
+  serviceOpen: boolean;      // dropdown aberto?
+  // Para autocomplete de detalhes
+  detalheOpen: boolean;
 }
 
 interface GuiaFormProps {
@@ -78,28 +103,39 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
   const currentYear = new Date().getFullYear().toString();
   const [processoAtivo, setProcessoAtivo] = useState<boolean>(initialData?.processoAtivo || false);
   const [numeroProcesso, setNumeroProcesso] = useState<string>(initialData?.numeroProcesso || currentYear);
-  const [isQuickAdding, setIsQuickAdding] = useState(false);
-  const [newServiceName, setNewServiceName] = useState('');
-  const [newServiceCategory, setNewServiceCategory] = useState<'Programacao' | 'Sinalizacao' | 'Impressao'>('Programacao');
-  const [newServicePrice, setNewServicePrice] = useState(0);
 
   const [items, setItems] = useState<ItemGuia[]>(() => {
     if (initialData?.itens && initialData.itens.length > 0) return initialData.itens;
     return [{ id: Math.random().toString(36).substr(2, 9), servicoId: '', descricao: '', detalhes: '', quantidade: 1, valorUnitario: 0, status: StatusServico.CONCLUIDO }];
   });
 
-  const [itemExtras, setItemExtras] = useState<Record<string, ItemExtras>>({});
-  const [selectedResponsaveis, setSelectedResponsaveis] = useState<string[]>(initialData?.responsaveisExternos || []);
+  const [itemExtras, setItemExtras] = useState<Record<string, ItemExtras>>(() => {
+    // Inicializar serviceText com descricao já existente (modo edição)
+    const init: Record<string, ItemExtras> = {};
+    const src = initialData?.itens || [];
+    src.forEach(item => {
+      init[item.id] = { selectedSubtype: '', customSubtype: '', tamanho: '', serviceText: item.descricao || '', serviceOpen: false, detalheOpen: false };
+    });
+    return init;
+  });
+
+  const [selectedResponsaveis, setSelectedResponsaveis] = useState<string[]>(() => {
+    if (initialData?.responsaveisExternos) return initialData.responsaveisExternos;
+    return RESPONSAVEIS_PADRAO;
+  });
+
   const [numeroGuia, setNumeroGuia] = useState<string>(initialData?.numero || suggestedNumber || '');
   const [orgSearch, setOrgSearch] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Autocomplete solicitante
+  const [solicitanteSuggestions, setSolicitanteSuggestions] = useState<string[]>([]);
+  const [showSolicitanteDrop, setShowSolicitanteDrop] = useState(false);
   const solicitanteRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (solicitanteRef.current && !solicitanteRef.current.contains(e.target as Node))
-        setShowSuggestions(false);
+        setShowSolicitanteDrop(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -112,8 +148,9 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     }
   }, [initialData, orgaosList]);
 
+  // ─── EXTRAS ───────────────────────────────────────
   const getExtras = (itemId: string): ItemExtras =>
-    itemExtras[itemId] || { selectedSubtype: '', customSubtype: '', tamanho: '' };
+    itemExtras[itemId] || { selectedSubtype: '', customSubtype: '', tamanho: '', serviceText: '', serviceOpen: false, detalheOpen: false };
 
   const updateExtras = (itemId: string, patch: Partial<ItemExtras>) =>
     setItemExtras(prev => ({ ...prev, [itemId]: { ...getExtras(itemId), ...patch } }));
@@ -127,54 +164,67 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     return [item.descricao, subtype, extras.tamanho].filter(Boolean).join(' - ');
   };
 
+  // ─── SOLICITANTE ──────────────────────────────────
   const handleSolicitanteChange = (value: string) => {
     setSolicitante(value);
     if (value.length >= 2) {
       const f = getSolicitantesConhecidos().filter(s => s.toLowerCase().includes(value.toLowerCase()));
-      setSuggestions(f);
-      setShowSuggestions(f.length > 0);
-    } else {
-      setShowSuggestions(false);
-    }
+      setSolicitanteSuggestions(f);
+      setShowSolicitanteDrop(f.length > 0);
+    } else setShowSolicitanteDrop(false);
   };
 
+  // ─── ITEMS ────────────────────────────────────────
   const handleAddItem = () => {
-    setItems([...items, { id: Math.random().toString(36).substr(2, 9), servicoId: '', descricao: '', detalhes: '', quantidade: 1, valorUnitario: 0, status: StatusServico.CONCLUIDO }]);
+    const newId = Math.random().toString(36).substr(2, 9);
+    setItems(prev => [...prev, { id: newId, servicoId: '', descricao: '', detalhes: '', quantidade: 1, valorUnitario: 0, status: StatusServico.CONCLUIDO }]);
   };
 
   const updateItem = (index: number, field: keyof ItemGuia, value: any) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    if (field === 'servicoId') {
-      const s = servicosList.find(serv => serv.id === value);
-      newItems[index].descricao = s ? s.descricao : '';
-      newItems[index].valorUnitario = s ? s.valorUnitario : 0;
-      updateExtras(newItems[index].id, { selectedSubtype: '', customSubtype: '', tamanho: '' });
-    }
-    setItems(newItems);
+    setItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
   };
 
   const removeItem = (index: number) => {
     const itemId = items[index].id;
-    setItems(items.filter((_, i) => i !== index));
+    setItems(prev => prev.filter((_, i) => i !== index));
     setItemExtras(prev => { const next = { ...prev }; delete next[itemId]; return next; });
   };
 
+  // ─── SERVIÇO - busca e seleção ───────────────────
+  const getServicosParaItem = (searchText: string): ServicoPreco[] => {
+    const sorted = [...servicosList].sort((a, b) => a.descricao.localeCompare(b.descricao));
+    if (!searchText.trim()) return sorted; // mostra TODOS quando vazio
+    return sorted.filter(s => s.descricao.toLowerCase().includes(searchText.toLowerCase()));
+  };
+
+  const handleServiceTextChange = (index: number, value: string) => {
+    const item = items[index];
+    // Marca como "novo" se o texto não bate exatamente com nenhum serviço cadastrado
+    const match = servicosList.find(s => s.descricao.toLowerCase() === value.toLowerCase());
+    if (match) {
+      setItems(prev => prev.map((it, i) => i === index ? { ...it, servicoId: match.id, descricao: match.descricao, valorUnitario: match.valorUnitario } : it));
+    } else {
+      setItems(prev => prev.map((it, i) => i === index ? { ...it, servicoId: 'custom_new', descricao: value } : it));
+    }
+    updateExtras(item.id, { serviceText: value, serviceOpen: true });
+  };
+
+  const handleSelectServico = (index: number, servico: ServicoPreco) => {
+    const item = items[index];
+    setItems(prev => prev.map((it, i) => i === index
+      ? { ...it, servicoId: servico.id, descricao: servico.descricao, valorUnitario: servico.valorUnitario }
+      : it));
+    updateExtras(item.id, { serviceText: servico.descricao, serviceOpen: false, selectedSubtype: '', customSubtype: '', tamanho: '' });
+  };
+
+  // ─── RESPONSÁVEIS ─────────────────────────────────
   const toggleResponsavel = (nome: string) =>
     setSelectedResponsaveis(prev => prev.includes(nome) ? prev.filter(n => n !== nome) : [...prev, nome]);
 
   const toggleAllResponsaveis = () =>
     setSelectedResponsaveis(selectedResponsaveis.length === responsaveisList.length ? [] : responsaveisList.map(r => r.nome));
 
-  const handleQuickAddService = () => {
-    if (!newServiceName) return alert('O nome do serviço é obrigatório.');
-    if (onAddGlobalServico) {
-      onAddGlobalServico({ id: Math.random().toString(36).substr(2, 9), descricao: newServiceName, categoria: newServiceCategory, valorUnitario: newServicePrice });
-      setIsQuickAdding(false); setNewServiceName(''); setNewServicePrice(0);
-      alert('Serviço cadastrado com sucesso e já disponível na lista!');
-    }
-  };
-
+  // ─── CONSTRUIR + SALVAR ───────────────────────────
   const constructGuia = (): Guia | null => {
     const orgao = orgaosList.find(o => o.id === selectedOrgaoId);
     if (!orgao) return null;
@@ -190,11 +240,25 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     };
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return alert('Adicione pelo menos um item');
     const guia = constructGuia();
     if (!guia) return alert('Selecione um órgão válido');
+
+    // Auto-cadastrar serviços novos
+    for (const item of items) {
+      if (item.servicoId === 'custom_new' && item.descricao.trim()) {
+        const novoServico: ServicoPreco = {
+          id: Math.random().toString(36).substr(2, 9),
+          descricao: item.descricao.trim(),
+          categoria: 'Programacao',
+          valorUnitario: item.valorUnitario || 0
+        };
+        if (onAddGlobalServico) onAddGlobalServico(novoServico);
+      }
+    }
+    items.forEach(item => { if (item.detalhes) salvarDetalheLS(item.detalhes); });
     salvarSolicitanteLS(solicitante);
     onSave(guia);
   };
@@ -205,6 +269,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     onPrint(guia);
   };
 
+  // ─── FILTROS ─────────────────────────────────────
   const filteredOrgs = orgSearch
     ? orgaosList.filter(o => {
         const t = orgSearch.toLowerCase().trim();
@@ -215,46 +280,18 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     : orgaosList;
 
   const sortedOperadores = [...operadoresList].sort((a, b) => a.nome.localeCompare(b.nome));
-  const sortedServicos = [...servicosList].sort((a, b) => a.descricao.localeCompare(b.descricao));
+
+  const sortedResponsaveis = [...responsaveisList].sort((a, b) => {
+    const ai = RESPONSAVEIS_PADRAO.indexOf(a.nome);
+    const bi = RESPONSAVEIS_PADRAO.indexOf(b.nome);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return a.nome.localeCompare(b.nome);
+  });
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto relative">
-
-      {/* ── MODAL QUICK ADD ── */}
-      {isQuickAdding && (
-        <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Cadastrar Novo Tipo de Serviço</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nome do Serviço</label>
-                <input className="w-full border border-slate-300 p-2 rounded focus:ring-2 focus:ring-emerald-500 outline-none"
-                  value={newServiceName} onChange={e => setNewServiceName(e.target.value)} placeholder="Ex: Diploma" autoFocus />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Categoria</label>
-                <select className="w-full border border-slate-300 p-2 rounded" value={newServiceCategory}
-                  onChange={e => setNewServiceCategory(e.target.value as any)}>
-                  <option value="Programacao">Programação</option>
-                  <option value="Sinalizacao">Sinalização</option>
-                  <option value="Impressao">Impressão</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Unitário (R$)</label>
-                <input type="number" step="0.01" className="w-full border border-slate-300 p-2 rounded"
-                  value={newServicePrice} onChange={e => setNewServicePrice(parseFloat(e.target.value) || 0)} />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button type="button" onClick={() => setIsQuickAdding(false)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded">Cancelar</button>
-              <button type="button" onClick={handleQuickAddService}
-                className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-bold">Salvar Serviço</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── HEADER ── */}
       <div className="flex justify-between items-center mb-6 border-b pb-4">
@@ -290,7 +327,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
             <div className="absolute z-50 bg-white border border-slate-200 mt-1 rounded-md shadow-xl max-h-64 overflow-auto w-full">
               {filteredOrgs.length > 0 ? filteredOrgs.map(o => (
                 <div key={o.id} className="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-0"
-                  onClick={() => { setSelectedOrgaoId(o.id); setOrgSearch(o.nome); }}>
+                  onMouseDown={e => { e.preventDefault(); setSelectedOrgaoId(o.id); setOrgSearch(o.nome); }}>
                   <div className="text-sm font-bold text-slate-800">{o.sigla} - {o.nome}</div>
                   <div className="text-xs text-slate-500 mt-0.5">
                     {o.endereco}{o.telefone && <span className="ml-2 text-blue-600 font-medium">Tel: {o.telefone}</span>}
@@ -310,16 +347,16 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
             onFocus={() => {
               if (solicitante.length >= 2) {
                 const f = getSolicitantesConhecidos().filter(s => s.toLowerCase().includes(solicitante.toLowerCase()));
-                if (f.length > 0) { setSuggestions(f); setShowSuggestions(true); }
+                if (f.length > 0) { setSolicitanteSuggestions(f); setShowSolicitanteDrop(true); }
               }
             }}
             placeholder="Nome de quem pediu"
           />
-          {showSuggestions && suggestions.length > 0 && (
+          {showSolicitanteDrop && solicitanteSuggestions.length > 0 && (
             <div className="absolute z-50 bg-white border border-slate-200 mt-1 rounded-md shadow-xl max-h-48 overflow-auto w-full">
-              {suggestions.map((nome, i) => (
+              {solicitanteSuggestions.map((nome, i) => (
                 <div key={i} className="p-2.5 hover:bg-blue-50 cursor-pointer text-sm border-b border-slate-100 last:border-0 flex items-center gap-2"
-                  onMouseDown={e => { e.preventDefault(); setSolicitante(nome); setShowSuggestions(false); }}>
+                  onMouseDown={e => { e.preventDefault(); setSolicitante(nome); setShowSolicitanteDrop(false); }}>
                   <svg width="12" height="12" viewBox="0 0 20 20" fill="none" className="text-blue-400 shrink-0">
                     <circle cx="10" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
                     <path d="M3 17c0-3 3-5 7-5s7 2 7 5" stroke="currentColor" strokeWidth="2"/>
@@ -332,10 +369,10 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
         </div>
       </div>
 
-      {/* ── PROCESSO ── */}
+      {/* ── PROCESSO (opcional) ── */}
       <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col md:flex-row items-center gap-4">
         <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700 text-sm whitespace-nowrap">
-          <input type="checkbox" className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+          <input type="checkbox" className="w-4 h-4 rounded text-blue-600"
             checked={processoAtivo} onChange={e => setProcessoAtivo(e.target.checked)} />
           ADICIONAR Nº DO PROCESSO
         </label>
@@ -368,22 +405,13 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
       <div className="mb-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-semibold text-slate-700">Itens / Serviços</h3>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setIsQuickAdding(true)}
-              className="bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 text-sm flex items-center gap-1 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/>
-              </svg>
-              Cadastrar Novo Serviço
-            </button>
-            <button type="button" onClick={handleAddItem}
-              className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm flex items-center gap-1 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14"/><path d="M12 5v14"/>
-              </svg>
-              Adicionar Item
-            </button>
-          </div>
+          <button type="button" onClick={handleAddItem}
+            className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm flex items-center gap-1 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14"/><path d="M12 5v14"/>
+            </svg>
+            Adicionar Item
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -391,6 +419,11 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
             const subtipos = getSubtiposDoServico(item.descricao);
             const extras = getExtras(item.id);
             const showPreview = !!(extras.selectedSubtype || extras.tamanho);
+            const isCustomNew = item.servicoId === 'custom_new' && !!item.descricao.trim();
+            const servicosFiltrados = getServicosParaItem(extras.serviceText);
+            const detalhesSugeridos = item.detalhes && item.detalhes.length >= 2
+              ? getDetalhesConhecidos().filter(d => d.toLowerCase().includes(item.detalhes.toLowerCase())).slice(0, 6)
+              : [];
 
             return (
               <div key={item.id} className="border border-slate-200 p-4 rounded-xl bg-slate-50 relative">
@@ -399,15 +432,49 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
 
-                  {/* Serviço */}
-                  <div className="md:col-span-5">
+                  {/* ── SERVIÇO - campo de busca com dropdown ── */}
+                  <div className="md:col-span-5 relative">
                     <label className="text-xs font-semibold text-slate-500 uppercase block mb-1">Serviço</label>
-                    <select className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-blue-400 outline-none"
-                      value={item.servicoId} onChange={e => updateItem(index, 'servicoId', e.target.value)}>
-                      <option value="">Selecione um serviço...</option>
-                      {sortedServicos.map(s => <option key={s.id} value={s.id}>{s.descricao}</option>)}
-                      <option value="custom">Outro (Personalizado)</option>
-                    </select>
+                    <input
+                      type="text"
+                      autoComplete="off"
+                      className={`w-full border rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-blue-400 outline-none ${isCustomNew ? 'border-emerald-400 bg-emerald-50' : 'border-slate-300'}`}
+                      value={extras.serviceText}
+                      placeholder="Digite para buscar..."
+                      onChange={e => handleServiceTextChange(index, e.target.value)}
+                      onFocus={() => updateExtras(item.id, { serviceOpen: true })}
+                      onBlur={() => setTimeout(() => updateExtras(item.id, { serviceOpen: false }), 200)}
+                    />
+                    {isCustomNew && (
+                      <div className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                        <span>✨</span> Novo serviço — será cadastrado ao salvar
+                      </div>
+                    )}
+                    {extras.serviceOpen && (
+                      <div className="absolute z-[60] bg-white border border-slate-200 mt-1 rounded-lg shadow-2xl w-full max-h-56 overflow-auto">
+                        {servicosFiltrados.length === 0 && (
+                          <div className="px-3 py-2 text-xs text-slate-400 text-center">Nenhum serviço encontrado</div>
+                        )}
+                        {servicosFiltrados.map(s => (
+                          <div key={s.id}
+                            onMouseDown={e => { e.preventDefault(); handleSelectServico(index, s); }}
+                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-slate-100 last:border-0 flex items-center justify-between gap-2">
+                            <span className="font-medium text-slate-800">{s.descricao}</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${
+                              s.categoria === 'Programacao' ? 'bg-purple-100 text-purple-700' :
+                              s.categoria === 'Sinalizacao' ? 'bg-orange-100 text-orange-700' :
+                              'bg-blue-100 text-blue-700'}`}>{s.categoria}</span>
+                          </div>
+                        ))}
+                        {extras.serviceText.trim() && !servicosList.some(s => s.descricao.toLowerCase() === extras.serviceText.trim().toLowerCase()) && (
+                          <div
+                            onMouseDown={e => { e.preventDefault(); updateExtras(item.id, { serviceOpen: false }); }}
+                            className="px-3 py-2.5 bg-emerald-50 hover:bg-emerald-100 cursor-pointer text-sm text-emerald-700 font-medium flex items-center gap-2 border-t-2 border-emerald-200 sticky bottom-0">
+                            <span className="text-base">+</span> Criar "{extras.serviceText.trim()}"
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Qtd */}
@@ -454,7 +521,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
                         ))}
                         {extras.selectedSubtype === 'Outro' && (
                           <input type="text" autoFocus
-                            className="border-2 border-blue-400 rounded-full px-4 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-40"
+                            className="border-2 border-blue-400 rounded-full px-4 py-1 text-sm focus:outline-none w-40"
                             placeholder="Digite o tipo..."
                             value={extras.customSubtype}
                             onChange={e => updateExtras(item.id, { customSubtype: e.target.value })} />
@@ -463,16 +530,29 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
                     </div>
                   )}
 
-                  {/* Detalhes */}
-                  <div className="md:col-span-12">
+                  {/* Detalhes com autocomplete */}
+                  <div className="md:col-span-12 relative">
                     <label className="text-xs font-semibold text-slate-500 uppercase block mb-1">
-                      Detalhes <span className="text-slate-400 normal-case font-normal">(Gramatura, Cor, Acabamento - opcional)</span>
+                      Detalhes <span className="text-slate-400 normal-case font-normal">(Gramatura, Cor, Acabamento — opcional)</span>
                     </label>
-                    <input type="text"
+                    <input type="text" autoComplete="off"
                       className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
                       value={item.detalhes}
-                      onChange={e => updateItem(index, 'detalhes', e.target.value)}
+                      onChange={e => { updateItem(index, 'detalhes', e.target.value); updateExtras(item.id, { detalheOpen: true }); }}
+                      onFocus={() => updateExtras(item.id, { detalheOpen: true })}
+                      onBlur={() => setTimeout(() => updateExtras(item.id, { detalheOpen: false }), 200)}
                       placeholder="Ex: Papel Couchê 150g, 4x0" />
+                    {extras.detalheOpen && detalhesSugeridos.length > 0 && (
+                      <div className="absolute z-50 bg-white border border-slate-200 mt-1 rounded-lg shadow-xl w-full max-h-40 overflow-auto">
+                        {detalhesSugeridos.map((d, i) => (
+                          <div key={i}
+                            onMouseDown={e => { e.preventDefault(); updateItem(index, 'detalhes', d); updateExtras(item.id, { detalheOpen: false }); }}
+                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-slate-100 last:border-0 text-slate-700">
+                            {d}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Operadores */}
@@ -488,7 +568,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
                                 const current = item.operadores || [];
                                 updateItem(index, 'operadores', isSelected ? current.filter(n => n !== op.nome) : [...current, op.nome]);
                               }}
-                              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                              className="rounded border-slate-300 text-blue-600" />
                             <span className="text-xs text-slate-700">{op.nome}</span>
                           </label>
                         );
@@ -501,10 +581,10 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
                     <div className="md:col-span-12">
                       <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-xs text-emerald-700 flex items-center gap-2">
                         <svg width="14" height="14" viewBox="0 0 20 20" fill="none" className="shrink-0">
-                          <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/>
-                          <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5"/>
+                          <path d="M1 10s3-7 9-7 9 7 9 7-3 7-9 7-9-7-9-7z" stroke="currentColor" strokeWidth="1.5"/>
+                          <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.5"/>
                         </svg>
-                        <span><strong>Como ficará na guia:</strong> {buildDescricao(item)}</span>
+                        <span><strong>Como ficará:</strong> {buildDescricao(item)}</span>
                       </div>
                     </div>
                   )}
@@ -516,7 +596,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
         </div>
       </div>
 
-      {/* ── RESPONSÁVEIS EXTERNOS ── */}
+      {/* ── RESPONSÁVEIS ── */}
       <div className="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
         <div className="flex justify-between items-center mb-3">
           <label className="block text-sm font-semibold text-slate-700">Serviço Externo Realizado Por:</label>
@@ -524,15 +604,19 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
             {selectedResponsaveis.length === responsaveisList.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
           </button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {responsaveisList.map(resp => (
-            <label key={resp.id} className="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                checked={selectedResponsaveis.includes(resp.nome)} onChange={() => toggleResponsavel(resp.nome)} />
-              <span className="text-sm text-slate-700">{resp.nome}</span>
-            </label>
-          ))}
-          {responsaveisList.length === 0 && <span className="text-xs text-slate-500 col-span-3">Nenhum responsável cadastrado.</span>}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {sortedResponsaveis.map(resp => {
+            const isPadrao = RESPONSAVEIS_PADRAO.includes(resp.nome);
+            return (
+              <label key={resp.id} className={`flex items-center space-x-2 cursor-pointer p-2 rounded-lg transition-colors ${isPadrao ? 'bg-blue-50 border border-blue-100' : 'hover:bg-slate-100'}`}>
+                <input type="checkbox" className="rounded border-slate-300 text-blue-600"
+                  checked={selectedResponsaveis.includes(resp.nome)} onChange={() => toggleResponsavel(resp.nome)} />
+                <span className={`text-sm ${isPadrao ? 'text-blue-800 font-medium' : 'text-slate-700'}`}>{resp.nome}</span>
+                {isPadrao && <span className="text-xs text-blue-400 ml-auto">padrão</span>}
+              </label>
+            );
+          })}
+          {responsaveisList.length === 0 && <span className="text-xs text-slate-500 col-span-2">Nenhum responsável cadastrado.</span>}
         </div>
       </div>
 
