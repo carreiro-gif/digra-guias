@@ -29,23 +29,15 @@ const getSubtiposDoServico = (descricao: string): string[] | null => {
 };
 
 // ===========================
-// 👥 RESPONSÁVEIS PADRÃO
-// ===========================
-const RESPONSAVEIS_PADRAO = [
-  'Valmir Marcante',
-  'Márcio Souza',
-  'Rolliug de Assis',
-  'André José de Carvalho',
-];
-
-// ===========================
-// 💾 AUTOCOMPLETE - SOLICITANTE
+// 💾 AUTOCOMPLETE SOLICITANTE
 // ===========================
 const LS_SOLICITANTES = 'digra_solicitantes_conhecidos';
+
 const getSolicitantesConhecidos = (): string[] => {
   try { return JSON.parse(localStorage.getItem(LS_SOLICITANTES) || '[]'); }
   catch { return []; }
 };
+
 const salvarSolicitanteLS = (nome: string) => {
   if (!nome.trim()) return;
   const lista = getSolicitantesConhecidos();
@@ -55,32 +47,12 @@ const salvarSolicitanteLS = (nome: string) => {
 };
 
 // ===========================
-// 💾 AUTOCOMPLETE - DETALHES
-// ===========================
-const LS_DETALHES = 'digra_detalhes_conhecidos';
-const getDetalhesConhecidos = (): string[] => {
-  try { return JSON.parse(localStorage.getItem(LS_DETALHES) || '[]'); }
-  catch { return []; }
-};
-const salvarDetalheLS = (detalhe: string) => {
-  if (!detalhe.trim()) return;
-  const lista = getDetalhesConhecidos();
-  if (!lista.map(d => d.toLowerCase()).includes(detalhe.trim().toLowerCase())) {
-    localStorage.setItem(LS_DETALHES, JSON.stringify([...lista, detalhe.trim()].sort()));
-  }
-};
-
-// ===========================
-// TIPOS INTERNOS
+// TIPOS
 // ===========================
 interface ItemExtras {
   selectedSubtype: string;
   customSubtype: string;
   tamanho: string;
-  serviceSearch: string;      // texto digitado no campo de serviço
-  showServiceDrop: boolean;   // dropdown de serviço aberto
-  detalheSearch: string;      // texto digitado em detalhes (para autocomplete)
-  showDetalheDrop: boolean;   // dropdown de detalhes aberto
 }
 
 interface GuiaFormProps {
@@ -106,6 +78,10 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
   const currentYear = new Date().getFullYear().toString();
   const [processoAtivo, setProcessoAtivo] = useState<boolean>(initialData?.processoAtivo || false);
   const [numeroProcesso, setNumeroProcesso] = useState<string>(initialData?.numeroProcesso || currentYear);
+  const [isQuickAdding, setIsQuickAdding] = useState(false);
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newServiceCategory, setNewServiceCategory] = useState<'Programacao' | 'Sinalizacao' | 'Impressao'>('Programacao');
+  const [newServicePrice, setNewServicePrice] = useState(0);
 
   const [items, setItems] = useState<ItemGuia[]>(() => {
     if (initialData?.itens && initialData.itens.length > 0) return initialData.itens;
@@ -113,25 +89,17 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
   });
 
   const [itemExtras, setItemExtras] = useState<Record<string, ItemExtras>>({});
-
-  // Pré-seleciona os 4 responsáveis padrão se não for edição
-  const [selectedResponsaveis, setSelectedResponsaveis] = useState<string[]>(() => {
-    if (initialData?.responsaveisExternos) return initialData.responsaveisExternos;
-    return RESPONSAVEIS_PADRAO;
-  });
-
+  const [selectedResponsaveis, setSelectedResponsaveis] = useState<string[]>(initialData?.responsaveisExternos || []);
   const [numeroGuia, setNumeroGuia] = useState<string>(initialData?.numero || suggestedNumber || '');
   const [orgSearch, setOrgSearch] = useState('');
-
-  // Autocomplete solicitante
-  const [solicitanteSuggestions, setSolicitanteSuggestions] = useState<string[]>([]);
-  const [showSolicitanteDrop, setShowSolicitanteDrop] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const solicitanteRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (solicitanteRef.current && !solicitanteRef.current.contains(e.target as Node))
-        setShowSolicitanteDrop(false);
+        setShowSuggestions(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -144,9 +112,8 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     }
   }, [initialData, orgaosList]);
 
-  // ─── EXTRAS helpers ───────────────────────────────
   const getExtras = (itemId: string): ItemExtras =>
-    itemExtras[itemId] || { selectedSubtype: '', customSubtype: '', tamanho: '', serviceSearch: '', showServiceDrop: false, detalheSearch: '', showDetalheDrop: false };
+    itemExtras[itemId] || { selectedSubtype: '', customSubtype: '', tamanho: '' };
 
   const updateExtras = (itemId: string, patch: Partial<ItemExtras>) =>
     setItemExtras(prev => ({ ...prev, [itemId]: { ...getExtras(itemId), ...patch } }));
@@ -160,19 +127,17 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     return [item.descricao, subtype, extras.tamanho].filter(Boolean).join(' - ');
   };
 
-  // ─── SOLICITANTE ──────────────────────────────────
   const handleSolicitanteChange = (value: string) => {
     setSolicitante(value);
     if (value.length >= 2) {
       const f = getSolicitantesConhecidos().filter(s => s.toLowerCase().includes(value.toLowerCase()));
-      setSolicitanteSuggestions(f);
-      setShowSolicitanteDrop(f.length > 0);
+      setSuggestions(f);
+      setShowSuggestions(f.length > 0);
     } else {
-      setShowSolicitanteDrop(false);
+      setShowSuggestions(false);
     }
   };
 
-  // ─── ITEMS ────────────────────────────────────────
   const handleAddItem = () => {
     setItems([...items, { id: Math.random().toString(36).substr(2, 9), servicoId: '', descricao: '', detalhes: '', quantidade: 1, valorUnitario: 0, status: StatusServico.CONCLUIDO }]);
   };
@@ -180,6 +145,12 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
   const updateItem = (index: number, field: keyof ItemGuia, value: any) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
+    if (field === 'servicoId') {
+      const s = servicosList.find(serv => serv.id === value);
+      newItems[index].descricao = s ? s.descricao : '';
+      newItems[index].valorUnitario = s ? s.valorUnitario : 0;
+      updateExtras(newItems[index].id, { selectedSubtype: '', customSubtype: '', tamanho: '' });
+    }
     setItems(newItems);
   };
 
@@ -189,43 +160,21 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     setItemExtras(prev => { const next = { ...prev }; delete next[itemId]; return next; });
   };
 
-  // ─── SERVIÇO AUTOCOMPLETE por item ───────────────
-  const getFilteredServicos = (search: string): ServicoPreco[] => {
-    if (!search.trim()) return [...servicosList].sort((a, b) => a.descricao.localeCompare(b.descricao)).slice(0, 8);
-    return servicosList
-      .filter(s => s.descricao.toLowerCase().includes(search.toLowerCase()))
-      .sort((a, b) => a.descricao.localeCompare(b.descricao));
-  };
-
-  const handleServiceSearchChange = (index: number, value: string) => {
-    const item = items[index];
-    updateItem(index, 'descricao', value);
-    updateItem(index, 'servicoId', 'custom_new');
-    updateExtras(item.id, { serviceSearch: value, showServiceDrop: true });
-  };
-
-  const handleSelectServico = (index: number, servico: ServicoPreco) => {
-    const item = items[index];
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], servicoId: servico.id, descricao: servico.descricao, valorUnitario: servico.valorUnitario };
-    setItems(newItems);
-    updateExtras(item.id, { serviceSearch: servico.descricao, showServiceDrop: false, selectedSubtype: '', customSubtype: '', tamanho: '' });
-  };
-
-  // ─── DETALHES AUTOCOMPLETE por item ──────────────
-  const getFilteredDetalhes = (search: string): string[] => {
-    if (!search.trim()) return [];
-    return getDetalhesConhecidos().filter(d => d.toLowerCase().includes(search.toLowerCase())).slice(0, 6);
-  };
-
-  // ─── RESPONSÁVEIS ─────────────────────────────────
   const toggleResponsavel = (nome: string) =>
     setSelectedResponsaveis(prev => prev.includes(nome) ? prev.filter(n => n !== nome) : [...prev, nome]);
 
   const toggleAllResponsaveis = () =>
     setSelectedResponsaveis(selectedResponsaveis.length === responsaveisList.length ? [] : responsaveisList.map(r => r.nome));
 
-  // ─── CONSTRUIR + SALVAR ───────────────────────────
+  const handleQuickAddService = () => {
+    if (!newServiceName) return alert('O nome do serviço é obrigatório.');
+    if (onAddGlobalServico) {
+      onAddGlobalServico({ id: Math.random().toString(36).substr(2, 9), descricao: newServiceName, categoria: newServiceCategory, valorUnitario: newServicePrice });
+      setIsQuickAdding(false); setNewServiceName(''); setNewServicePrice(0);
+      alert('Serviço cadastrado com sucesso e já disponível na lista!');
+    }
+  };
+
   const constructGuia = (): Guia | null => {
     const orgao = orgaosList.find(o => o.id === selectedOrgaoId);
     if (!orgao) return null;
@@ -241,28 +190,11 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return alert('Adicione pelo menos um item');
     const guia = constructGuia();
     if (!guia) return alert('Selecione um órgão válido');
-
-    // Auto-cadastrar serviços novos digitados
-    for (const item of items) {
-      if (item.servicoId === 'custom_new' && item.descricao.trim()) {
-        const novoServico: ServicoPreco = {
-          id: Math.random().toString(36).substr(2, 9),
-          descricao: item.descricao.trim(),
-          categoria: 'Programacao',
-          valorUnitario: item.valorUnitario || 0
-        };
-        if (onAddGlobalServico) onAddGlobalServico(novoServico);
-      }
-    }
-
-    // Salvar detalhes no localStorage
-    items.forEach(item => { if (item.detalhes) salvarDetalheLS(item.detalhes); });
-
     salvarSolicitanteLS(solicitante);
     onSave(guia);
   };
@@ -273,7 +205,6 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     onPrint(guia);
   };
 
-  // ─── FILTROS ─────────────────────────────────────
   const filteredOrgs = orgSearch
     ? orgaosList.filter(o => {
         const t = orgSearch.toLowerCase().trim();
@@ -284,21 +215,46 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     : orgaosList;
 
   const sortedOperadores = [...operadoresList].sort((a, b) => a.nome.localeCompare(b.nome));
-
-  // Ordenar lista de responsáveis: padrão primeiro, depois o resto
-  const sortedResponsaveis = [...responsaveisList].sort((a, b) => {
-    const aIsPadrao = RESPONSAVEIS_PADRAO.includes(a.nome);
-    const bIsPadrao = RESPONSAVEIS_PADRAO.includes(b.nome);
-    if (aIsPadrao && !bIsPadrao) return -1;
-    if (!aIsPadrao && bIsPadrao) return 1;
-    const aIdx = RESPONSAVEIS_PADRAO.indexOf(a.nome);
-    const bIdx = RESPONSAVEIS_PADRAO.indexOf(b.nome);
-    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-    return a.nome.localeCompare(b.nome);
-  });
+  const sortedServicos = [...servicosList].sort((a, b) => a.descricao.localeCompare(b.descricao));
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto relative">
+
+      {/* ── MODAL QUICK ADD ── */}
+      {isQuickAdding && (
+        <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Cadastrar Novo Tipo de Serviço</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nome do Serviço</label>
+                <input className="w-full border border-slate-300 p-2 rounded focus:ring-2 focus:ring-emerald-500 outline-none"
+                  value={newServiceName} onChange={e => setNewServiceName(e.target.value)} placeholder="Ex: Diploma" autoFocus />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Categoria</label>
+                <select className="w-full border border-slate-300 p-2 rounded" value={newServiceCategory}
+                  onChange={e => setNewServiceCategory(e.target.value as any)}>
+                  <option value="Programacao">Programação</option>
+                  <option value="Sinalizacao">Sinalização</option>
+                  <option value="Impressao">Impressão</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Unitário (R$)</label>
+                <input type="number" step="0.01" className="w-full border border-slate-300 p-2 rounded"
+                  value={newServicePrice} onChange={e => setNewServicePrice(parseFloat(e.target.value) || 0)} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button type="button" onClick={() => setIsQuickAdding(false)}
+                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded">Cancelar</button>
+              <button type="button" onClick={handleQuickAddService}
+                className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-bold">Salvar Serviço</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── HEADER ── */}
       <div className="flex justify-between items-center mb-6 border-b pb-4">
@@ -354,16 +310,16 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
             onFocus={() => {
               if (solicitante.length >= 2) {
                 const f = getSolicitantesConhecidos().filter(s => s.toLowerCase().includes(solicitante.toLowerCase()));
-                if (f.length > 0) { setSolicitanteSuggestions(f); setShowSolicitanteDrop(true); }
+                if (f.length > 0) { setSuggestions(f); setShowSuggestions(true); }
               }
             }}
             placeholder="Nome de quem pediu"
           />
-          {showSolicitanteDrop && solicitanteSuggestions.length > 0 && (
+          {showSuggestions && suggestions.length > 0 && (
             <div className="absolute z-50 bg-white border border-slate-200 mt-1 rounded-md shadow-xl max-h-48 overflow-auto w-full">
-              {solicitanteSuggestions.map((nome, i) => (
+              {suggestions.map((nome, i) => (
                 <div key={i} className="p-2.5 hover:bg-blue-50 cursor-pointer text-sm border-b border-slate-100 last:border-0 flex items-center gap-2"
-                  onMouseDown={e => { e.preventDefault(); setSolicitante(nome); setShowSolicitanteDrop(false); }}>
+                  onMouseDown={e => { e.preventDefault(); setSolicitante(nome); setShowSuggestions(false); }}>
                   <svg width="12" height="12" viewBox="0 0 20 20" fill="none" className="text-blue-400 shrink-0">
                     <circle cx="10" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
                     <path d="M3 17c0-3 3-5 7-5s7 2 7 5" stroke="currentColor" strokeWidth="2"/>
@@ -376,7 +332,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
         </div>
       </div>
 
-      {/* ── PROCESSO (opcional) ── */}
+      {/* ── PROCESSO ── */}
       <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col md:flex-row items-center gap-4">
         <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700 text-sm whitespace-nowrap">
           <input type="checkbox" className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
@@ -412,13 +368,22 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
       <div className="mb-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-semibold text-slate-700">Itens / Serviços</h3>
-          <button type="button" onClick={handleAddItem}
-            className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm flex items-center gap-1 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14"/><path d="M12 5v14"/>
-            </svg>
-            Adicionar Item
-          </button>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setIsQuickAdding(true)}
+              className="bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 text-sm flex items-center gap-1 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/>
+              </svg>
+              Cadastrar Novo Serviço
+            </button>
+            <button type="button" onClick={handleAddItem}
+              className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm flex items-center gap-1 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14"/><path d="M12 5v14"/>
+              </svg>
+              Adicionar Item
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -426,9 +391,6 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
             const subtipos = getSubtiposDoServico(item.descricao);
             const extras = getExtras(item.id);
             const showPreview = !!(extras.selectedSubtype || extras.tamanho);
-            const servicosFiltrados = getFilteredServicos(item.descricao);
-            const isCustomNew = item.servicoId === 'custom_new';
-            const detalhesSugeridos = getFilteredDetalhes(item.detalhes);
 
             return (
               <div key={item.id} className="border border-slate-200 p-4 rounded-xl bg-slate-50 relative">
@@ -437,44 +399,15 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
 
-                  {/* Serviço - AUTOCOMPLETE */}
-                  <div className="md:col-span-5 relative">
+                  {/* Serviço */}
+                  <div className="md:col-span-5">
                     <label className="text-xs font-semibold text-slate-500 uppercase block mb-1">Serviço</label>
-                    <input type="text" autoComplete="off"
-                      className={`w-full border rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-blue-400 outline-none ${isCustomNew && item.descricao ? 'border-emerald-400 bg-emerald-50' : 'border-slate-300'}`}
-                      value={item.descricao}
-                      placeholder="Digite para buscar ou criar..."
-                      onChange={e => handleServiceSearchChange(index, e.target.value)}
-                      onFocus={() => updateExtras(item.id, { showServiceDrop: true })}
-                      onBlur={() => setTimeout(() => updateExtras(item.id, { showServiceDrop: false }), 150)}
-                    />
-                    {isCustomNew && item.descricao && (
-                      <div className="text-xs text-emerald-600 mt-1">✨ Novo serviço — será cadastrado ao salvar</div>
-                    )}
-                    {extras.showServiceDrop && (
-                      <div className="absolute z-50 bg-white border border-slate-200 mt-1 rounded-lg shadow-xl w-full max-h-52 overflow-auto">
-                        {servicosFiltrados.length > 0 && servicosFiltrados.map(s => (
-                          <div key={s.id} onMouseDown={() => handleSelectServico(index, s)}
-                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-slate-100 last:border-0">
-                            <span className="font-medium text-slate-800">{s.descricao}</span>
-                            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
-                              s.categoria === 'Programacao' ? 'bg-purple-100 text-purple-700' :
-                              s.categoria === 'Sinalizacao' ? 'bg-orange-100 text-orange-700' :
-                              'bg-blue-100 text-blue-700'}`}>{s.categoria}</span>
-                          </div>
-                        ))}
-                        {item.descricao.trim() && !servicosList.some(s => s.descricao.toLowerCase() === item.descricao.trim().toLowerCase()) && (
-                          <div onMouseDown={() => updateExtras(item.id, { showServiceDrop: false })}
-                            className="px-3 py-2.5 bg-emerald-50 hover:bg-emerald-100 cursor-pointer text-sm text-emerald-700 font-medium flex items-center gap-2 border-t border-emerald-200">
-                            <span className="text-lg leading-none">+</span>
-                            Criar "{item.descricao.trim()}" como novo serviço
-                          </div>
-                        )}
-                        {servicosFiltrados.length === 0 && !item.descricao.trim() && (
-                          <div className="px-3 py-2 text-xs text-slate-400 text-center">Digite para buscar...</div>
-                        )}
-                      </div>
-                    )}
+                    <select className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-blue-400 outline-none"
+                      value={item.servicoId} onChange={e => updateItem(index, 'servicoId', e.target.value)}>
+                      <option value="">Selecione um serviço...</option>
+                      {sortedServicos.map(s => <option key={s.id} value={s.id}>{s.descricao}</option>)}
+                      <option value="custom">Outro (Personalizado)</option>
+                    </select>
                   </div>
 
                   {/* Qtd */}
@@ -530,28 +463,16 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
                     </div>
                   )}
 
-                  {/* Detalhes - com autocomplete */}
-                  <div className="md:col-span-12 relative">
+                  {/* Detalhes */}
+                  <div className="md:col-span-12">
                     <label className="text-xs font-semibold text-slate-500 uppercase block mb-1">
                       Detalhes <span className="text-slate-400 normal-case font-normal">(Gramatura, Cor, Acabamento - opcional)</span>
                     </label>
-                    <input type="text" autoComplete="off"
+                    <input type="text"
                       className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
                       value={item.detalhes}
-                      onChange={e => { updateItem(index, 'detalhes', e.target.value); updateExtras(item.id, { showDetalheDrop: true }); }}
-                      onFocus={() => updateExtras(item.id, { showDetalheDrop: true })}
-                      onBlur={() => setTimeout(() => updateExtras(item.id, { showDetalheDrop: false }), 150)}
+                      onChange={e => updateItem(index, 'detalhes', e.target.value)}
                       placeholder="Ex: Papel Couchê 150g, 4x0" />
-                    {extras.showDetalheDrop && detalhesSugeridos.length > 0 && (
-                      <div className="absolute z-50 bg-white border border-slate-200 mt-1 rounded-lg shadow-xl w-full max-h-40 overflow-auto">
-                        {detalhesSugeridos.map((d, i) => (
-                          <div key={i} onMouseDown={() => { updateItem(index, 'detalhes', d); updateExtras(item.id, { showDetalheDrop: false }); }}
-                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-slate-100 last:border-0 text-slate-700">
-                            {d}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
 
                   {/* Operadores */}
@@ -580,8 +501,8 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
                     <div className="md:col-span-12">
                       <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-xs text-emerald-700 flex items-center gap-2">
                         <svg width="14" height="14" viewBox="0 0 20 20" fill="none" className="shrink-0">
-                          <path d="M1 10s3-7 9-7 9 7 9 7-3 7-9 7-9-7-9-7z" stroke="currentColor" strokeWidth="1.5"/>
-                          <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                          <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/>
+                          <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5"/>
                         </svg>
                         <span><strong>Como ficará na guia:</strong> {buildDescricao(item)}</span>
                       </div>
@@ -603,19 +524,15 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
             {selectedResponsaveis.length === responsaveisList.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {sortedResponsaveis.map(resp => {
-            const isPadrao = RESPONSAVEIS_PADRAO.includes(resp.nome);
-            return (
-              <label key={resp.id} className={`flex items-center space-x-2 cursor-pointer p-2 rounded-lg transition-colors ${isPadrao ? 'bg-blue-50 border border-blue-100' : 'hover:bg-slate-100'}`}>
-                <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  checked={selectedResponsaveis.includes(resp.nome)} onChange={() => toggleResponsavel(resp.nome)} />
-                <span className={`text-sm ${isPadrao ? 'text-blue-800 font-medium' : 'text-slate-700'}`}>{resp.nome}</span>
-                {isPadrao && <span className="text-xs text-blue-400 ml-auto">padrão</span>}
-              </label>
-            );
-          })}
-          {responsaveisList.length === 0 && <span className="text-xs text-slate-500 col-span-2">Nenhum responsável cadastrado.</span>}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {responsaveisList.map(resp => (
+            <label key={resp.id} className="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                checked={selectedResponsaveis.includes(resp.nome)} onChange={() => toggleResponsavel(resp.nome)} />
+              <span className="text-sm text-slate-700">{resp.nome}</span>
+            </label>
+          ))}
+          {responsaveisList.length === 0 && <span className="text-xs text-slate-500 col-span-3">Nenhum responsável cadastrado.</span>}
         </div>
       </div>
 
