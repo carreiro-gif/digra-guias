@@ -393,13 +393,14 @@ function App() {
      🔍 BUSCA AVANÇADA E FILTROS
   ============================ */
   const filteredGuias = guias.filter(g => {
-    // Busca por texto (número, órgão, solicitante, observações)
+    // Busca por texto (número, órgão, solicitante, observações, serviços)
     const matchesSearch =
       g.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
       g.orgaoSnapshot?.sigla?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       g.orgaoSnapshot?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       g.solicitante?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      g.observacoes?.toLowerCase().includes(searchTerm.toLowerCase());
+      g.observacoes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      g.itens?.some(item => item.descricao?.toLowerCase().includes(searchTerm.toLowerCase()));
 
     // Filtro por órgão
     const matchesOrgao = !filterOrgao || g.orgaoSnapshot?.id === filterOrgao;
@@ -671,7 +672,7 @@ function App() {
             {/* Busca Básica */}
             <input
               className="border p-2 mb-4 w-full rounded"
-              placeholder="Buscar por número, órgão, solicitante ou observações..."
+              placeholder="Buscar por número, órgão, solicitante, serviço ou observações..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
