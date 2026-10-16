@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Guia, ItemGuia } from '../types';
 
 interface GuiaPrintProps {
@@ -12,18 +12,10 @@ interface PageChunk {
   pageNumber: number;
 }
 
-// Logo PJERJ (URL direta do arquivo via raw do GitHub)
 const LOGO_PJERJ_BASE64 = "https://raw.githubusercontent.com/carreiro-gif/digra-logo-TJ/main/logo_tjrj.png";
 
 export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      window.print();
-    }, 600);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const ITEMS_PER_PAGE_NORMAL = 10; 
+  const ITEMS_PER_PAGE_NORMAL = 10;
   const ITEMS_PER_PAGE_WITH_FOOTER = 5;
 
   const pages = useMemo(() => {
@@ -41,21 +33,16 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
         _pages.push({ items: remaining, isLast: true, pageNumber: pageCount });
         break;
       }
-      
+
       const chunk = remaining.slice(0, ITEMS_PER_PAGE_NORMAL);
       remaining = remaining.slice(ITEMS_PER_PAGE_NORMAL);
-      
       const isExhausted = remaining.length === 0;
-      
-      _pages.push({ 
-        items: chunk, 
-        isLast: isExhausted, 
-        pageNumber: pageCount 
-      });
+
+      _pages.push({ items: chunk, isLast: isExhausted, pageNumber: pageCount });
       pageCount++;
 
       if (isExhausted) {
-        _pages[_pages.length - 1].isLast = false; 
+        _pages[_pages.length - 1].isLast = false;
         _pages.push({ items: [], isLast: true, pageNumber: pageCount });
         break;
       }
@@ -65,53 +52,75 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
 
   const totalPages = pages.length;
 
+  const handlePrint = () => window.print();
+
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-75 overflow-auto flex justify-center py-8">
-      
+
       <style>{`
         @page {
           size: A5 portrait;
           margin: 10mm;
         }
-        
-        @media print { 
-          html, body {
-            width: 148mm;
-            height: 210mm;
+
+        /* ──── MODO IMPRESSÃO ──── */
+        @media print {
+          /* Esconde TUDO */
+          body * {
+            visibility: hidden;
           }
-          
-          .no-print, .no-print-content { 
-            display: none !important; 
+
+          /* Mostra só o conteúdo das guias */
+          .print-root,
+          .print-root * {
+            visibility: visible;
           }
-          
+
+          /* Posiciona o conteúdo no topo da folha */
+          .print-root {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: block !important;
+          }
+
+          /* Cada página A5 */
           .print-page {
             page-break-after: always;
+            break-after: page;
             width: 148mm;
-            height: 210mm;
+            min-height: 210mm;
             padding: 10mm;
             box-sizing: border-box;
           }
-          
+
           .print-page:last-child {
             page-break-after: auto;
+            break-after: auto;
           }
-          
-          .print-root {
-            width: 148mm;
+
+          /* Esconde botões e controles */
+          .no-print {
+            display: none !important;
           }
         }
       `}</style>
 
-      {/* Controles flutuantes */}
+      {/* ── Botões flutuantes (não imprimem) ── */}
       <div className="fixed top-4 right-4 z-50 no-print flex gap-2">
-        <button 
-          onClick={() => window.print()}
+        <button
+          onClick={handlePrint}
           className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 font-bold flex items-center gap-2"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect width="12" height="8" x="6" y="14"/>
+          </svg>
           Imprimir A5
         </button>
-        <button 
+        <button
           onClick={onClose}
           className="bg-white text-slate-800 px-6 py-3 rounded-full shadow-lg hover:bg-slate-100 font-bold"
         >
@@ -119,36 +128,41 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
         </button>
       </div>
 
+      {/* ── Páginas ── */}
       <div className="print-root flex flex-col gap-8 print:gap-0">
         {pages.map((page) => (
-          <div key={page.pageNumber} className="print-page shadow-2xl print:shadow-none bg-white text-black font-sans">
-            
-            {/* --- HEADER --- */}
+          <div
+            key={page.pageNumber}
+            className="print-page shadow-2xl print:shadow-none bg-white text-black font-sans flex flex-col"
+          >
+
+            {/* HEADER */}
             <header className="flex flex-row items-center border-b border-black pb-4 mb-4">
-              {/* Logo PJERJ (reduzida para abrir espaço) */}
               <div className="w-[20%] flex justify-start items-center pl-2">
-                <img 
+                <img
                   src={LOGO_PJERJ_BASE64}
-                  alt="PJERJ" 
+                  alt="PJERJ"
                   className="w-auto h-auto object-contain"
                   style={{ maxHeight: '18mm', maxWidth: '18mm' }}
                 />
               </div>
 
-              {/* Texto institucional — centralizado, com respiro; linhas sem quebra quando necessário */}
               <div className="w-[50%] text-[10px] font-bold leading-snug tracking-wide uppercase text-center flex flex-col justify-center pl-3">
                 <span className="whitespace-nowrap">Poder Judiciário do Estado do Rio de Janeiro</span>
                 <span>Diretoria Geral de Logística</span>
-                {/* Esta linha fica 1 linha só, sem quebra e com micro redução */}
                 <span className="whitespace-nowrap tracking-normal text-[9.8px]">Departamento de Patrimônio e Material</span>
                 <span className="mt-0.5">Divisão de Produção Gráfica (DIGRA)</span>
               </div>
 
-              {/* Metadata */}
               <div className="w-[30%] text-right flex flex-col justify-center text-[10px] pr-2">
                 <div className="font-bold">Nº: <span className="text-sm">{guia.numero}</span></div>
                 <div className="mt-0.5">Data: {new Date(guia.dataEmissao).toLocaleDateString('pt-BR')}</div>
-                {/* REMOVIDO: Pág. X/Y */}
+                {/* Numeração de páginas — aparece só quando tem mais de 1 */}
+                {totalPages > 1 && (
+                  <div className="mt-1 font-bold text-[11px] bg-slate-100 border border-slate-300 rounded px-1 py-0.5 text-center">
+                    Pág. {page.pageNumber}/{totalPages}
+                  </div>
+                )}
               </div>
             </header>
 
@@ -156,18 +170,19 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
             <div className="text-center mb-4">
               <h1
                 className="text-[20px] font-bold uppercase border border-black inline-block tracking-wider"
-                // Redução adicional: proporcional e mais elegante
                 style={{ padding: '0.3mm 5.5mm' }}
               >
                 GUIA
               </h1>
             </div>
 
-            {/* --- BLOCO DE INFORMAÇÕES --- */}
+            {/* INFORMAÇÕES */}
             <section className="text-[11px] mb-4 space-y-1 px-2">
               <div className="flex">
                 <span className="font-bold w-28">Órgão Requisitante:</span>
-                <span className="uppercase flex-1 border-b border-dotted border-gray-400">{guia.orgaoSnapshot.nome} ({guia.orgaoSnapshot.sigla})</span>
+                <span className="uppercase flex-1 border-b border-dotted border-gray-400">
+                  {guia.orgaoSnapshot.nome} ({guia.orgaoSnapshot.sigla})
+                </span>
               </div>
               <div className="flex">
                 <span className="font-bold w-28">Contato:</span>
@@ -177,11 +192,13 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
               </div>
               <div className="flex">
                 <span className="font-bold w-28">Endereço:</span>
-                <span className="uppercase flex-1 border-b border-dotted border-gray-400">{guia.orgaoSnapshot.endereco} {guia.orgaoSnapshot.cep ? `- CEP: ${guia.orgaoSnapshot.cep}` : ''}</span>
+                <span className="uppercase flex-1 border-b border-dotted border-gray-400">
+                  {guia.orgaoSnapshot.endereco} {guia.orgaoSnapshot.cep ? `- CEP: ${guia.orgaoSnapshot.cep}` : ''}
+                </span>
               </div>
             </section>
 
-            {/* --- TABELA --- */}
+            {/* TABELA */}
             <div className="flex-1 flex flex-col px-2">
               <table className="w-full border-collapse">
                 <thead>
@@ -202,24 +219,24 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                     </tr>
                   ))}
                   {page.items.length === 0 && (
-                    <tr><td colSpan={3} className="py-4 text-center italic text-gray-500">-- Continuação --</td></tr>
+                    <tr>
+                      <td colSpan={3} className="py-4 text-center italic text-gray-500">-- Continuação --</td>
+                    </tr>
                   )}
                 </tbody>
               </table>
               {!page.isLast && (
-                 <div className="mt-2 text-right text-[9px] italic">Continua na próxima página...</div>
+                <div className="mt-2 text-right text-[9px] italic">Continua na próxima página...</div>
               )}
             </div>
 
-            {/* --- RODAPÉ (RECIBO) --- */}
+            {/* RODAPÉ / RECIBO (só na última página) */}
             {page.isLast && (
               <footer className="mt-auto pt-2 px-2 pb-2">
                 {guia.observacoes && (
                   <div className="mb-4 border border-black p-2 text-[10px]">
-                    <div className="mb-2">
-                      <div className="font-bold mb-1">OBSERVAÇÕES:</div>
-                      <div className="whitespace-pre-wrap leading-tight">{guia.observacoes}</div>
-                    </div>
+                    <div className="font-bold mb-1">OBSERVAÇÕES:</div>
+                    <div className="whitespace-pre-wrap leading-tight">{guia.observacoes}</div>
                   </div>
                 )}
                 <div className="border border-black p-2">
@@ -227,22 +244,32 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
                     Recebimento
                   </h3>
                   <div className="space-y-3 text-[10px]">
-                    <div className="flex gap-4 items-end"><div className="w-16 font-bold shrink-0">Nome:</div><div className="flex-1 border-b border-black h-4"></div></div>
-                    <div className="flex gap-4 items-end"><div className="w-16 font-bold shrink-0">Matrícula/RG:</div><div className="flex-1 border-b border-black h-4"></div></div>
                     <div className="flex gap-4 items-end">
-                      <div className="w-16 font-bold shrink-0">Cargo:</div><div className="flex-1 border-b border-black h-4"></div>
-                      <div className="w-10 font-bold shrink-0 text-right">Data:</div><div className="w-24 border-b border-black h-4"></div>
+                      <div className="w-16 font-bold shrink-0">Nome:</div>
+                      <div className="flex-1 border-b border-black h-4"></div>
                     </div>
-                    <div className="flex gap-4 items-end pt-2"><div className="w-16 font-bold shrink-0">Assinatura:</div><div className="flex-1 border-b border-black h-4"></div></div>
+                    <div className="flex gap-4 items-end">
+                      <div className="w-16 font-bold shrink-0">Matrícula/RG:</div>
+                      <div className="flex-1 border-b border-black h-4"></div>
+                    </div>
+                    <div className="flex gap-4 items-end">
+                      <div className="w-16 font-bold shrink-0">Cargo:</div>
+                      <div className="flex-1 border-b border-black h-4"></div>
+                      <div className="w-10 font-bold shrink-0 text-right">Data:</div>
+                      <div className="w-24 border-b border-black h-4"></div>
+                    </div>
+                    <div className="flex gap-4 items-end pt-2">
+                      <div className="w-16 font-bold shrink-0">Assinatura:</div>
+                      <div className="flex-1 border-b border-black h-4"></div>
+                    </div>
                   </div>
                 </div>
-                {/* REMOVIDO: DIGRA - Sistema de Gestão de Remessa */}
               </footer>
             )}
+
           </div>
         ))}
       </div>
     </div>
   );
 };
-``
