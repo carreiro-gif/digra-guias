@@ -260,7 +260,9 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
     }
     items.forEach(item => { if (item.detalhes) salvarDetalheLS(item.detalhes); });
     salvarSolicitanteLS(solicitante);
-    onSave(guia);
+    // Salva e abre impressão automaticamente
+    await onSave(guia);
+    onPrint(guia);
   };
 
   const handlePrintClick = () => {
