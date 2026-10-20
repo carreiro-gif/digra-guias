@@ -309,6 +309,7 @@ function App() {
     await salvarGuia(guia);
     setActiveTab('list');
     setEditingGuia(undefined);
+    // Impressão é aberta pelo GuiaForm após o save
   };
 
   const handleDeleteGuia = async (id: string) => {
