@@ -140,6 +140,7 @@ function App() {
 
   const [editingGuia, setEditingGuia] = useState<Guia | undefined>();
   const [printGuia, setPrintGuia] = useState<Guia | null>(null);
+  const [viewGuia, setViewGuia] = useState<Guia | null>(null); // visualizar sem imprimir
   
   // 🔍 Estados de busca e filtros avançados
   const [searchTerm, setSearchTerm] = useState('');
@@ -307,6 +308,9 @@ function App() {
 
   const handleSaveGuia = async (guia: Guia) => {
     await salvarGuia(guia);
+    // Incrementa contador local imediatamente para evitar duplicatas
+    const seqSalva = Number(guia.numero.split('/')[1] || 0);
+    setNextSequence(prev => Math.max(prev, seqSalva + 1));
     setActiveTab('list');
     setEditingGuia(undefined);
     // Impressão é aberta pelo GuiaForm após o save
@@ -758,20 +762,26 @@ function App() {
                         </div>
                       </div>
                       <div className="flex gap-3">
-                        <button 
+                        <button
+                          onClick={() => setViewGuia(g)}
+                          className="text-slate-500 hover:text-slate-800 text-sm"
+                        >
+                          Visualizar
+                        </button>
+                        <button
                           onClick={() => setPrintGuia(g)}
                           className="text-blue-600 hover:text-blue-800 text-sm"
                         >
                           Imprimir
                         </button>
-                        <button 
+                        <button
                           onClick={() => { setEditingGuia(g); setActiveTab('form'); }}
                           className="text-green-600 hover:text-green-800 text-sm"
                         >
                           Editar
                         </button>
                         {isAdmin && (
-                          <button 
+                          <button
                             onClick={() => handleDeleteGuia(g.id)}
                             className="text-red-600 hover:text-red-800 text-sm"
                           >
@@ -831,7 +841,8 @@ function App() {
         ⚡ Alexandre | DIGRA Apps
       </footer>
 
-      {printGuia && <GuiaPrint guia={printGuia} onClose={() => setPrintGuia(null)} />}
+      {printGuia && <GuiaPrint guia={printGuia} onClose={() => setPrintGuia(null)} autoPrint={true} />}
+      {viewGuia && <GuiaPrint guia={viewGuia} onClose={() => setViewGuia(null)} autoPrint={false} />}
     </div>
   );
 }
