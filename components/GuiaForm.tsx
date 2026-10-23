@@ -288,8 +288,9 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
   const sortedOperadores = [...operadoresList].sort((a, b) => a.nome.localeCompare(b.nome));
 
   const sortedResponsaveis = [...responsaveisList].sort((a, b) => {
-    const ai = RESPONSAVEIS_PADRAO.indexOf(a.nome);
-    const bi = RESPONSAVEIS_PADRAO.indexOf(b.nome);
+    const padraoAtual = getResponsaveisPadrao();
+    const ai = padraoAtual.indexOf(a.nome);
+    const bi = padraoAtual.indexOf(b.nome);
     if (ai !== -1 && bi !== -1) return ai - bi;
     if (ai !== -1) return -1;
     if (bi !== -1) return 1;
