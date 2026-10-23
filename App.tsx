@@ -307,13 +307,36 @@ function App() {
   };
 
   const handleSaveGuia = async (guia: Guia) => {
-    await salvarGuia(guia);
-    // Incrementa contador local imediatamente para evitar duplicatas
-    const seqSalva = Number(guia.numero.split('/')[1] || 0);
-    setNextSequence(prev => Math.max(prev, seqSalva + 1));
-    setActiveTab('list');
-    setEditingGuia(undefined);
-    // Impressão é aberta pelo GuiaForm após o save
+    // ── Proteção contra número duplicado ──
+    // Verifica se já existe outra guia com esse número (exceto ela mesma em edição)
+    const numeroJaExiste = guias.some(g => g.numero === guia.numero && g.id !== guia.id);
+    if (numeroJaExiste) {
+      // Gera o próximo número disponível automaticamente
+      const year = new Date().getFullYear();
+      const maiorSeq = Math.max(
+        ...guias.map(g => Number(g.numero.split('/')[1] || 0)),
+        nextSequence
+      );
+      const novoNumero = `${year}/${(maiorSeq + 1).toString().padStart(4, '0')}`;
+      const confirmou = window.confirm(
+        `⚠️ O número ${guia.numero} já existe!\n\nO sistema vai salvar como ${novoNumero}.\n\nConfirmar?`
+      );
+      if (!confirmou) return;
+      guia = { ...guia, numero: novoNumero };
+    }
+
+    try {
+      await salvarGuia(guia);
+      // Incrementa contador local imediatamente para evitar duplicatas
+      const seqSalva = Number(guia.numero.split('/')[1] || 0);
+      setNextSequence(prev => Math.max(prev, seqSalva + 1));
+      setActiveTab('list');
+      setEditingGuia(undefined);
+      // Impressão é aberta pelo GuiaForm após o save
+    } catch (err) {
+      alert('❌ Erro ao salvar a guia. Verifique sua conexão e tente novamente.\n\nA guia NÃO foi salva.');
+      console.error('Erro ao salvar guia:', err);
+    }
   };
 
   const handleDeleteGuia = async (id: string) => {
@@ -751,40 +774,52 @@ function App() {
                     return String(b.numero).localeCompare(String(a.numero), 'pt-BR');
                   })
                   .map((g) => (
-                    <div key={g.id} className="bg-white p-3 rounded shadow mb-2 flex justify-between items-center">
+                    <div key={g.id} className="bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-100 mb-2 flex justify-between items-center hover:shadow-md transition-shadow">
                       <div>
-                        <div>
-                          <strong>{g.numero}</strong> — {g.orgaoSnapshot.sigla}
+                        <div className="font-bold text-slate-800 text-sm">
+                          {g.numero} <span className="text-slate-400 font-normal">—</span> <span className="text-blue-700">{g.orgaoSnapshot.sigla}</span>
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-slate-400 mt-0.5">
                           {new Date(g.dataEmissao).toLocaleDateString('pt-BR')}
-                          {g.solicitante && ` • ${g.solicitante}`}
+                          {g.solicitante && <span className="ml-1">• {g.solicitante}</span>}
                         </div>
                       </div>
-                      <div className="flex gap-3">
+                      <div className="flex items-center gap-1.5">
+                        {/* Visualizar */}
                         <button
                           onClick={() => setViewGuia(g)}
-                          className="text-slate-500 hover:text-slate-800 text-sm"
+                          title="Visualizar guia"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                         >
-                          Visualizar
+                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          Ver
                         </button>
+                        {/* Imprimir */}
                         <button
                           onClick={() => setPrintGuia(g)}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
+                          title="Imprimir guia"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
                         >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
                           Imprimir
                         </button>
+                        {/* Editar */}
                         <button
                           onClick={() => { setEditingGuia(g); setActiveTab('form'); }}
-                          className="text-green-600 hover:text-green-800 text-sm"
+                          title="Editar guia"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
                         >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                           Editar
                         </button>
+                        {/* Excluir */}
                         {isAdmin && (
                           <button
                             onClick={() => handleDeleteGuia(g.id)}
-                            className="text-red-600 hover:text-red-800 text-sm"
+                            title="Excluir guia"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
                           >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                             Excluir
                           </button>
                         )}
