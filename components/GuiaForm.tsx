@@ -29,14 +29,18 @@ const getSubtiposDoServico = (descricao: string): string[] | null => {
 };
 
 // ===========================
-// 👥 RESPONSÁVEIS PADRÃO
+// 👥 RESPONSÁVEIS PADRÃO (lidos do localStorage — gerenciados em Responsáveis)
 // ===========================
-const RESPONSAVEIS_PADRAO = [
-  'Valmir Marcante',
-  'Márcio Souza',
-  'Rolliug de Assis',
-  'André José de Carvalho',
-];
+const LS_RESP_PADRAO = 'digra_responsaveis_padrao';
+// Fallback caso o usuário ainda não tenha configurado os padrões
+const FALLBACK_PADRAO = ['Valmir Marcante', 'Márcio Souza', 'Rolliug de Assis', 'André José de Carvalho'];
+
+const getResponsaveisPadrao = (): string[] => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_RESP_PADRAO) || '[]');
+    return saved.length > 0 ? saved : FALLBACK_PADRAO;
+  } catch { return FALLBACK_PADRAO; }
+};
 
 // ===========================
 // 💾 AUTOCOMPLETE - SOLICITANTE
@@ -121,7 +125,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
 
   const [selectedResponsaveis, setSelectedResponsaveis] = useState<string[]>(() => {
     if (initialData?.responsaveisExternos) return initialData.responsaveisExternos;
-    return RESPONSAVEIS_PADRAO;
+    return getResponsaveisPadrao();
   });
 
   const [numeroGuia, setNumeroGuia] = useState<string>(initialData?.numero || suggestedNumber || '');
@@ -656,7 +660,7 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {sortedResponsaveis.map(resp => {
-            const isPadrao = RESPONSAVEIS_PADRAO.includes(resp.nome);
+            const isPadrao = getResponsaveisPadrao().includes(resp.nome);
             return (
               <label key={resp.id} className={`flex items-center space-x-2 cursor-pointer p-2 rounded-lg transition-colors ${isPadrao ? 'bg-blue-50 border border-blue-100' : 'hover:bg-slate-100'}`}>
                 <input type="checkbox" className="rounded border-slate-300 text-blue-600"
