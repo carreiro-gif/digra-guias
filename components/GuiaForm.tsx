@@ -371,18 +371,66 @@ export const GuiaForm: React.FC<GuiaFormProps> = ({
         </div>
       </div>
 
-      {/* ── PROCESSO (opcional) ── */}
-      <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col md:flex-row items-center gap-4">
-        <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700 text-sm whitespace-nowrap">
-          <input type="checkbox" className="w-4 h-4 rounded text-blue-600"
-            checked={processoAtivo} onChange={e => setProcessoAtivo(e.target.checked)} />
-          ADICIONAR Nº DO PROCESSO
-        </label>
+      {/* ── PROCESSO — seleção formal ── */}
+      <div className="mb-6">
+        <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Vinculação a Processo Administrativo</label>
+        <div className="flex flex-col md:flex-row gap-3">
+          {/* Opção: sem processo */}
+          <button
+            type="button"
+            onClick={() => setProcessoAtivo(false)}
+            className={`flex-1 flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all ${
+              !processoAtivo
+                ? 'border-slate-600 bg-slate-700 text-white shadow-md'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400'
+            }`}
+          >
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${!processoAtivo ? 'border-white' : 'border-slate-400'}`}>
+              {!processoAtivo && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+            </div>
+            <div>
+              <div className="font-bold text-sm">Serviço sem processo administrativo</div>
+              <div className={`text-xs mt-0.5 ${!processoAtivo ? 'text-slate-300' : 'text-slate-400'}`}>
+                Remessa não vinculada a processo
+              </div>
+            </div>
+          </button>
+
+          {/* Opção: com processo */}
+          <button
+            type="button"
+            onClick={() => setProcessoAtivo(true)}
+            className={`flex-1 flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all ${
+              processoAtivo
+                ? 'border-blue-600 bg-blue-600 text-white shadow-md'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-blue-400'
+            }`}
+          >
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${processoAtivo ? 'border-white' : 'border-slate-400'}`}>
+              {processoAtivo && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+            </div>
+            <div>
+              <div className="font-bold text-sm">Vinculado a processo administrativo</div>
+              <div className={`text-xs mt-0.5 ${processoAtivo ? 'text-blue-200' : 'text-slate-400'}`}>
+                Informar o número do processo
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Campo do número — aparece só quando vinculado */}
         {processoAtivo && (
-          <div className="flex items-center gap-2 w-full md:w-auto flex-1">
-            <span className="text-sm font-bold text-slate-500">PROCESSO Nº:</span>
-            <input type="text" className="flex-1 md:max-w-xs border border-slate-300 rounded p-1.5 text-sm font-bold text-blue-800"
-              value={numeroProcesso} onChange={e => setNumeroProcesso(e.target.value)} placeholder="Digite o número do processo" />
+          <div className="mt-3 flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span className="text-sm font-bold text-blue-700 whitespace-nowrap">Nº do Processo:</span>
+            <input
+              type="text"
+              autoFocus
+              className="flex-1 border border-blue-300 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 bg-white focus:ring-2 focus:ring-blue-400 outline-none"
+              value={numeroProcesso}
+              onChange={e => setNumeroProcesso(e.target.value)}
+              placeholder="Ex: 2026-000123"
+            />
           </div>
         )}
       </div>
