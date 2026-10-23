@@ -4,6 +4,7 @@ import { Guia, ItemGuia } from '../types';
 interface GuiaPrintProps {
   guia: Guia;
   onClose: () => void;
+  autoPrint?: boolean; // true = imprime automaticamente; false = só visualiza
 }
 
 interface PageChunk {
@@ -14,7 +15,14 @@ interface PageChunk {
 
 const LOGO_PJERJ_BASE64 = "https://raw.githubusercontent.com/carreiro-gif/digra-logo-TJ/main/logo_tjrj.png";
 
-export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
+export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose, autoPrint = true }) => {
+  // Dispara impressão automática apenas quando autoPrint=true (ex: ao salvar nova guia)
+  React.useEffect(() => {
+    if (!autoPrint) return;
+    const timer = setTimeout(() => { window.print(); }, 600);
+    return () => clearTimeout(timer);
+  }, [autoPrint]);
+
   const ITEMS_PER_PAGE_NORMAL = 10;
   const ITEMS_PER_PAGE_WITH_FOOTER = 5;
 
@@ -118,7 +126,7 @@ export const GuiaPrint: React.FC<GuiaPrintProps> = ({ guia, onClose }) => {
             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
             <rect width="12" height="8" x="6" y="14"/>
           </svg>
-          Imprimir A5
+          {autoPrint ? 'Imprimir A5' : 'Imprimir'}
         </button>
         <button
           onClick={onClose}
