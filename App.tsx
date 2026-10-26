@@ -326,7 +326,9 @@ function App() {
     }
 
     try {
-      await salvarGuia(guia);
+      // Firebase não aceita campos undefined — remove antes de salvar
+      const guiaLimpa = JSON.parse(JSON.stringify(guia));
+      await salvarGuia(guiaLimpa);
       // Incrementa contador local imediatamente para evitar duplicatas
       const seqSalva = Number(guia.numero.split('/')[1] || 0);
       setNextSequence(prev => Math.max(prev, seqSalva + 1));
