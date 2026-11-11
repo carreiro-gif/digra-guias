@@ -322,7 +322,7 @@ function App() {
         );
         const numeroFinal = `${year}/${(maiorSeq + 1).toString().padStart(4, '0')}`;
         guia = { ...guia, numero: numeroFinal };
-        setNextSequence(maiorSeq + 2); // reserva o próximo imediatamente
+        setNextSequence(maiorSeq + 1);
       }
 
       // Firebase não aceita campos undefined — remove antes de salvar
