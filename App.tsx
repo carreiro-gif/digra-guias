@@ -296,13 +296,10 @@ function App() {
   ============================ */
   const getNextGuiaNumber = () => {
     const year = new Date().getFullYear();
-    const seq = Math.max(
-      ...guias
-        .filter(g => g.numero.startsWith(`${year}/`))
-        .map(g => Number(g.numero.split('/')[1] || 0)),
-      nextSequence
-    ) + 1;
-
+    const nums = guias
+      .filter(g => g.numero?.startsWith(`${year}/`))
+      .map(g => Number(g.numero.split('/')[1] || 0));
+    const seq = (nums.length > 0 ? Math.max(...nums) : 0) + 1;
     return `${year}/${seq.toString().padStart(4, '0')}`;
   };
 
@@ -322,7 +319,6 @@ function App() {
         );
         const numeroFinal = `${year}/${(maiorSeq + 1).toString().padStart(4, '0')}`;
         guia = { ...guia, numero: numeroFinal };
-        setNextSequence(maiorSeq + 1);
       }
 
       // Firebase não aceita campos undefined — remove antes de salvar
