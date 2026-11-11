@@ -307,31 +307,27 @@ function App() {
   };
 
   const handleSaveGuia = async (guia: Guia) => {
-    // ── Proteção contra número duplicado ──
-    // Verifica se já existe outra guia com esse número (exceto ela mesma em edição)
-    const numeroJaExiste = guias.some(g => g.numero === guia.numero && g.id !== guia.id);
-    if (numeroJaExiste) {
-      // Gera o próximo número disponível automaticamente
-      const year = new Date().getFullYear();
-      const maiorSeq = Math.max(
-        ...guias.map(g => Number(g.numero.split('/')[1] || 0)),
-        nextSequence
-      );
-      const novoNumero = `${year}/${(maiorSeq + 1).toString().padStart(4, '0')}`;
-      const confirmou = window.confirm(
-        `⚠️ O número ${guia.numero} já existe!\n\nO sistema vai salvar como ${novoNumero}.\n\nConfirmar?`
-      );
-      if (!confirmou) return;
-      guia = { ...guia, numero: novoNumero };
-    }
-
     try {
+      // ── Número sempre gerado na hora de salvar (evita duplicatas com múltiplos usuários) ──
+      // Só reatribui se for uma guia NOVA (não edição de guia existente)
+      const ehNova = !guias.some(g => g.id === guia.id);
+      if (ehNova) {
+        const year = new Date().getFullYear();
+        const maiorSeq = Math.max(
+          0,
+          ...guias
+            .filter(g => g.numero?.startsWith(`${year}/`))
+            .map(g => Number(g.numero.split('/')[1] || 0)),
+          nextSequence - 1
+        );
+        const numeroFinal = `${year}/${(maiorSeq + 1).toString().padStart(4, '0')}`;
+        guia = { ...guia, numero: numeroFinal };
+        setNextSequence(maiorSeq + 2); // reserva o próximo imediatamente
+      }
+
       // Firebase não aceita campos undefined — remove antes de salvar
       const guiaLimpa = JSON.parse(JSON.stringify(guia));
       await salvarGuia(guiaLimpa);
-      // Incrementa contador local imediatamente para evitar duplicatas
-      const seqSalva = Number(guia.numero.split('/')[1] || 0);
-      setNextSequence(prev => Math.max(prev, seqSalva + 1));
       setActiveTab('list');
       setEditingGuia(undefined);
       // Impressão é aberta pelo GuiaForm após o save
